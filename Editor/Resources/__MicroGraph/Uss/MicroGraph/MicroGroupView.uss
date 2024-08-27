@@ -1,0 +1,26 @@
+.microGroup{
+}
+/* .microGroup:selected{
+	border-color:rgba(0.267,0.753,1,1);
+} */
+.microGroup > .mainContainer > #headerContainer{
+	flex-direction : row;
+	border-bottom-width: var(--micrograph-metrics-default-border);
+	border-top-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-top-right-radius: var(--micrograph-metrics-default-border_radius);
+}
+.microGroup > .mainContainer > #headerContainer > #titleContainer{
+	align-items: flex-start;
+	flex-grow: 1;
+}
+.microGroup > .mainContainer > #headerContainer > #titleContainer > #titleLabel{
+	font-size: var(--micrograph-metrics-default-font_title_size);
+	-unity-font-style: bold;
+	color: var(--micrograph-colors-default-text);
+	-unity-text-align: middle-center;
+	text-shadow: 1px 1px black;
+}
+.microGroup_palette{
+	width: 48px;
+	align-items: center;
+}

@@ -1,0 +1,4 @@
+.internalGraphView {
+	background-color: var(--micrograph-colors-window-background);
+	flex-grow: 1;
+}

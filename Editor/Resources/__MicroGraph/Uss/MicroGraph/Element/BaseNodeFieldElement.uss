@@ -1,0 +1,28 @@
+.base_node_field{
+	flex-direction: row;
+}
+.in_node_field .base_node_title{
+	display: none;
+}
+.out_node_field{
+	flex-direction: row-reverse;
+}
+.none_node_field{
+	flex-direction: row;
+}
+.all_node_field{
+	flex-direction: row;
+}
+.unity-base-field{
+	flex-grow: 1;
+	flex-shrink: 1;
+}
+.base_node_field .base_node_title{	
+	-unity-text-align: middle-left;
+	min-width: 48px;
+	max-width: 48px;
+}
+.varport_input{
+	flex-grow: 0;
+	flex-shrink: 0;
+}

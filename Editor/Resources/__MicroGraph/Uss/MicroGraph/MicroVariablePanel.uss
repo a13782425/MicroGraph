@@ -1,0 +1,17 @@
+#contentContainer{
+	flex-direction: column;
+	border-width: 0;
+}
+#contentContainer #labelContainer{
+	align-self: center;
+}
+#contentContainer #labelContainer > #titleLabel{
+	color: var(--micrograph-colors-default-text);
+    -unity-font-style: bold;
+	text-shadow: 1px 1px black;
+    font-size: var(--micrograph-metrics-default-font_title_size);
+}
+#contentContainer #content > #header > #addButton{
+	margin-top: 0;
+	margin-bottom: 0;
+}

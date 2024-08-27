@@ -1,0 +1,16 @@
+{
+    "name": "MicroGraph.MonoExample.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0e7426cb50b61db48860b0e7ed3de949"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

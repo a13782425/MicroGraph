@@ -1,0 +1,74 @@
+.internal_node {
+	min-width: 120px;
+	min-height: 60px;
+}
+.internal_node > #node-border > #title{
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+}
+.internal_node EditorLabelElement > #title_label{
+	color: var(--micrograph-colors-default-text);
+}
+
+.internal_node_container{
+	background-color: var(--micrograph-colors-default-border);
+}
+
+.internal_node_top{
+	height: 24px;
+}
+.node_icon{
+	background-color: transparent;
+	align-self: center;
+	border-width: 0px;
+	margin: 4px;
+	padding: 0px;
+	height: 16px;
+	width: 16px;
+}
+
+/*标题的Icon*/
+.node_state_lock{
+	background-image: var(--micrograph-icons-node_lock);
+}
+
+.node_state_unlock{
+	background-image: var(--micrograph-icons-node_unlock);
+}
+.node_type_root{
+	background-image: var(--micrograph-icons-node_root);
+}
+.node_type_flow{
+	background-image: var(--micrograph-icons-node_flow);
+}
+
+.node_type_condition{
+	background-image: var(--micrograph-icons-node_condition);
+}
+
+.node_type_wait{
+	background-image: var(--micrograph-icons-node_wait);
+}
+
+
+/*横竖样式*/
+
+.vertical_port_input{
+	position: absolute;
+	align-self: center;
+	top: -24px;
+}
+.vertical_port_output{
+	position: absolute;
+	align-self: center;
+	bottom: -24px;
+}
+.horizontal_port_input{
+}
+.horizontal_port_output{
+}
+.vertical_port_input #type,
+.vertical_port_output #type,
+{
+	display: none;
+}

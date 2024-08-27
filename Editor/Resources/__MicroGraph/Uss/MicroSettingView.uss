@@ -1,0 +1,20 @@
+MicroSettingView{
+	flex-grow: 1; 
+}
+MicroSettingView > #contentContainer{
+	flex-grow: 0; 
+	flex-shrink: 1; 
+	border-width: var(--micrograph-metrics-default-border);
+    border-color: var(--micrograph-colors-toolbar-border);
+}
+MicroSettingView > #bottomContainer{
+	flex-grow : 0; 
+	flex-shrink : 1; 
+	min-height : 48px;
+	border-width: var(--micrograph-metrics-default-border);
+    border-color: var(--micrograph-colors-toolbar-border);
+}
+MicroSettingView > #bottomContainer > Button{
+	flex-grow: 1; 
+	flex-shrink: 1; 
+}

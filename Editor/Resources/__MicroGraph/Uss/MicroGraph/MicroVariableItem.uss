@@ -1,0 +1,31 @@
+MicroVariableItemView.blackboardField{
+	align-items: center;
+}
+MicroVariableItemView .pill #contents > #top > #icon {
+	width: 12px;
+	height: 12px;
+	border-radius: 6px;
+	margin-top: 0px;
+	margin-left: 0px;
+}
+MicroVariableItemView .pill #contents > #top > #title-label {
+	padding: 1px;
+	font-size: var(--micrograph-metrics-default-font_normal_size);
+	-unity-font-style: bold;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	text-overflow: ellipsis;
+    overflow: hidden;
+	flex-shrink: 1;
+	max-width: 96px;
+}
+.pill .var_count_label{
+	margin: 0px;
+	padding: 0px;
+	width: 12px;
+	height: 12px;
+	font-size: 10px;
+	color: black;
+	-unity-text-align: middle-center;
+	-unity-font-style: bold;
+}

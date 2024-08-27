@@ -1,0 +1,118 @@
+﻿{
+	--drak-color: rgba(54,41,5,1);
+	--light-color: rgba(252,215,110,1);
+	--alpha-drak-color: rgba(54,41,5,0.5);
+	--alpha-light-color: rgba(252,215,110,0.5);
+	--alpha-drak-color2: rgba(54,41,5,0.2);
+	--alpha-light-color2: rgba(252,215,110,0.2);
+}
+
+.micro_sticky{
+	overflow: hidden;
+	min-height: 100px;
+	min-width: 140px;
+}
+
+.theme-black > #node-border{
+	border-radius: 2px;
+}
+.theme-black #unity-text-input{
+	background-color: var(--drak-color);
+}
+
+.title_container{
+	height: 24px;
+	margin-left: 6px;
+	margin-right: 6px;
+	flex-direction: row;
+	align-items: center;
+}
+
+.title_container .size_popup{
+	height: 16px;
+	width: 42px;
+	margin: 0px;
+	margin-left: 4px;
+	padding: 0px;
+	background-color: transparent;
+}
+.title_container .size_popup .unity-text-element{
+	font-size: 14px;
+	color: var(--drak-color);
+}
+.title_container .size_popup .unity-base-popup-field__arrow{
+	height: 10px;
+	width: 10px;
+	-unity-background-image-tint-color: var(--drak-color);
+}
+
+.title_container .size_popup > .unity-popup-field__input{	
+	min-width: auto;
+	background-color: transparent;
+	border-color: var(--drak-color);
+}
+
+.theme-black .title_container .size_popup .unity-base-popup-field__arrow{
+	-unity-background-image-tint-color: var(--light-color);
+}
+.theme-black .title_container .size_popup > .unity-popup-field__input{	
+	min-width: auto;
+	background-color: transparent;
+	border-color: var(--light-color);
+}
+
+.theme-black .title_container .size_popup .unity-text-element{
+	color: var(--light-color);
+}
+
+.title_container .title_button{
+	width: 14px;
+	height: 14px;
+	margin: 0px;
+	margin-right: 2px;
+	padding: 0px;
+	border-radius: 0px;
+	border-color: transparent;
+	background-color: transparent;
+	-unity-background-image-tint-color: var(--drak-color);
+}
+.title_container .title_button:hover{
+	background-color: var(--alpha-drak-color2); 
+}
+.title_container .title_button.select{
+	background-color: var(--alpha-drak-color); 
+}
+
+.theme-black .title_container .title_button{
+	-unity-background-image-tint-color: var(--light-color); 
+}
+.theme-black .title_container .title_button:hover{
+	background-color: var(--alpha-light-color2); 
+}
+.theme-black .title_container .title_button.select{
+	background-color: var(--alpha-light-color); 
+}
+
+.theme-black .title_container .theme_button{
+	background-image: resource("__MicroGraph/Texture/Sticky/dark");
+}
+
+.title_container .theme_button{
+	background-image: resource("__MicroGraph/Texture/Sticky/light");
+}
+
+.title_container .bold_button{
+	background-image: resource("__MicroGraph/Texture/Sticky/font_bold");
+}
+
+.title_container .italic_button{
+	background-image: resource("__MicroGraph/Texture/Sticky/font_italic");
+}
+
+.title_container .underline_button{
+	background-image: resource("__MicroGraph/Texture/Sticky/font_underline");
+}
+
+.title_container .strickout_button{
+	background-image: resource("__MicroGraph/Texture/Sticky/font_strickout");
+}

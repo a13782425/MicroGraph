@@ -1,0 +1,101 @@
+﻿.micro_alignment{
+	margin: 0px;
+	position: absolute;
+	padding: 0px;
+	background-color: var(--micrograph-theme-background-color01);
+	border-color: var(--micrograph-theme-border-color01);
+	border-width: var(--micrograph-metrics-default-border);
+	border-top-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-top-right-radius: var(--micrograph-metrics-default-border_radius);
+	border-bottom-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-bottom-right-radius: var(--micrograph-metrics-default-border_radius);
+}
+
+.micro_alignment.vertical{
+	width: 36px;
+	height: auto;
+	flex-direction: column;
+}
+
+.micro_alignment.horizontal{
+	height: 36px;
+	width: auto;
+	flex-direction: row;
+}
+
+.micro_alignment_headicon{
+	align-self: center;
+}
+.micro_alignment_headicon:hover{
+	-unity-background-image-tint-color: var(--micrograph-colors-toolbar_button-text-hover);
+}
+.micro_alignment.vertical > .micro_alignment_headicon{
+	width: 12px;
+	height: 12px;
+	margin-top: 2px;
+	margin-bottom: 6px;
+	background-image: resource("__MicroGraph/Texture/Common/verticalcontainer");
+}
+.micro_alignment.horizontal > .micro_alignment_headicon{
+	width: 12px;
+	height: 12px;
+	margin-left: 2px;
+	margin-right: 6px;
+	background-image: resource("__MicroGraph/Texture/Common/horizontalcontaniner");
+}
+.micro_alignment > .micro_alignment_button{
+	width: 32px;
+	height: 24px;
+	margin: 0px;
+	padding: 0px;
+	border-width: 1px;
+	align-self: center;
+	align-items: center;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+.micro_alignment > .micro_alignment_button{
+	margin: 0px;
+	padding: 0px;
+	border-width: 1px;
+	align-self: center;
+	align-items: center;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+.micro_alignment.vertical > .micro_alignment_button{
+	width: 32px;
+	height: 24px;
+	flex-direction: column;
+}
+.micro_alignment.horizontal > .micro_alignment_button{
+	width: 24px;
+	height: 32px;
+	flex-direction: row;
+}
+.micro_alignment.vertical > .micro_alignment_button.first{
+	border-top-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-top-right-radius: var(--micrograph-metrics-default-border_radius);
+}
+.micro_alignment.vertical > .micro_alignment_button.last{
+	border-bottom-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-bottom-right-radius: var(--micrograph-metrics-default-border_radius);
+}
+
+.micro_alignment.horizontal > .micro_alignment_button.first{
+	border-top-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-bottom-left-radius: var(--micrograph-metrics-default-border_radius);
+}
+.micro_alignment.horizontal > .micro_alignment_button.last{
+	border-top-right-radius: var(--micrograph-metrics-default-border_radius);
+	border-bottom-right-radius: var(--micrograph-metrics-default-border_radius);
+}
+
+.micro_alignment > .micro_alignment_button > Image{
+	width: 22px;
+	height: 22px;
+}

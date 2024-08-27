@@ -1,0 +1,47 @@
+﻿.micronodecontrol{
+	margin: 4px;
+	overflow: hidden;
+}
+.micronodecontrol > .warning_label{
+	-unity-font-style: bold;
+	font-size: 18px;
+	text-shadow: 1px 1px black;
+	margin-bottom: 6px;
+	overflow: hidden;
+	white-space: normal;
+	-unity-text-align: middle-center;
+}
+.micronodecontrol > .nodecontent{
+
+}
+.micronodecontrol .title_label{
+	-unity-font-style: bold;
+	font-size: var(--micrograph-metrics-default-font_title_size);
+	text-shadow: 1px 1px black;
+	margin-bottom: 4px;
+	overflow: hidden;
+	white-space: normal;
+}
+.micronodecontrol .class_label{
+	-unity-font-style: italic;
+	color: rgba(137,137,137,1);
+	margin-bottom: 4px;
+	overflow: hidden;
+	white-space: normal;
+}
+
+.micronodecontrol .var_content{
+	margin-left: 6px;
+	margin-bottom: 6px;
+}
+.micronodecontrol .var_sub_content{
+	margin-top: 4px;
+	border-top-width: 4px;
+	border-top-color: var(--micrograph-colors-toolbar_button-background-select);
+}
+.micronodecontrol .var_content Label{
+	min-width: 0px;
+	overflow: hidden;
+	white-space: normal;
+	color: white;
+}

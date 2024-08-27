@@ -1,0 +1,82 @@
+FlyoutMenuView{
+    transition-property: width;
+    transition-duration: 150ms;
+    background-color: var(--micrograph-colors-toolbar-background);
+    width: 140px;
+    flex-grow: 1;
+    border-right-width: var(--micrograph-metrics-default-border);
+    border-right-color: var(--micrograph-colors-toolbar-border);
+}
+
+FlyoutMenuView.hide{
+    transition-property: width;
+    transition-duration: 150ms;
+    width: 48px;
+}
+
+#layoutContainer.FlyoutMenuView {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+#headerContainer.FlyoutMenuView {
+    height: 48px;
+    flex-direction: row;
+    align-items: center;
+    align-self: auto;
+    margin-left: 10px;
+}
+.FlyoutMenuView.OptionalContainer {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    /*display: none;*/
+}
+
+#headerContainer > .headerIcon{
+    width: 24px;
+    height: 24px;
+    background-image: var(--micrograph-icons-flyout-flyout_hide);
+    margin: 4px;
+}
+
+#headerContainer > .headerIcon:hover{
+    -unity-background-image-tint-color: var(--micrograph-colors-default-background-hover);
+}
+
+#headerContainer > .headerIcon:active{
+    -unity-background-image-tint-color: var(--micrograph-colors-default-background-active);
+}
+
+#headerContainer > .headerLabel{
+    display: flex;
+    align-self: center;
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+    font-size: 16px;
+    margin: 4px;
+}
+#headerContainer.hide{
+    margin-left: 0px;
+    align-self: center;
+}
+#headerContainer > .headerIcon.hide{
+    background-image: var(--micrograph-icons-flyout-flyout_show); 
+}
+#headerContainer > .headerLabel.hide{
+    display: none;
+}
+
+#buttonsScrollViewContainer.FlyoutMenuView.hide {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+#buttonsScrollViewContainer.FlyoutMenuView {
+    flex-grow: 1;
+    padding: 12px;
+}
+
+/*#buttonsScrollViewContainer.Fluid.ToggleButton.FlyoutMenuView {
+    padding: 4px;
+}*/

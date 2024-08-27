@@ -1,0 +1,147 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28a7061b5a501e241a1e41bdbd6a729f, type: 3}
+  m_Name: TestMono
+  m_EditorClassIdentifier: 
+  _onlyId: 02cc0b46-0fae-4a30-9f9a-929b40590c48
+  _nodes:
+  - rid: 1527686243179560964
+  - rid: 1527686243179560965
+  - rid: 1527686243179560966
+  - rid: 1527686243179560968
+  - rid: 1527686243179560969
+  - rid: 1527686243179560970
+  - rid: 1527686243179560971
+  _variables:
+  - rid: 1527686243179560967
+  editorInfo:
+    Title: TestMono
+    Describe: 
+    _createTime: 869559
+    _modifyTime: 870779
+    _uniqueId: 10008
+    ShowGrid: 1
+    CanZoom: 1
+    ShowMiniMap: 0
+    Scale: 1
+    Pos: {x: 220, y: 156}
+    Groups: []
+    Nodes:
+    - NodeId: 10001
+      Title: Awake
+      IsLock: 0
+      Pos: {x: 0, y: 0}
+    - NodeId: 10002
+      Title: Update
+      IsLock: 0
+      Pos: {x: 0, y: 138}
+    - NodeId: 10003
+      Title: Destroy
+      IsLock: 0
+      Pos: {x: 0, y: 307.5}
+    - NodeId: 10004
+      Title: "\u6253\u5370\u65E5\u5FD7"
+      IsLock: 0
+      Pos: {x: 452, y: 0}
+    - NodeId: 10005
+      Title: "\u6253\u5370\u65E5\u5FD7"
+      IsLock: 0
+      Pos: {x: 273, y: 342}
+    - NodeId: 10006
+      Title: "\u7B49\u5F85"
+      IsLock: 0
+      Pos: {x: 259, y: -5}
+    - NodeId: 10007
+      Title: "\u79FB\u52A8"
+      IsLock: 0
+      Pos: {x: 298, y: 136.5}
+    Variables:
+    - Name: tran
+      CanRename: 0
+      CanDelete: 0
+      CanDefaultValue: 0
+      CanAssign: 0
+    VariableNodes:
+    - NodeId: 10008
+      Name: tran
+      Pos: {x: 159, y: 197}
+    Stickys: []
+  AwakeNodeId: 10001
+  UpdateNodeId: 10002
+  DestroyNodeId: 10003
+  references:
+    version: 2
+    RefIds:
+    - rid: 1527686243179560964
+      type: {class: AwakeMonoNode, ns: MicroGraph.MonoExample.Runtime, asm: MicroGraph.MonoExample.Runtime}
+      data:
+        _onlyId: 10001
+        _childs: 16270000
+        _variableEdges: []
+    - rid: 1527686243179560965
+      type: {class: UpdateMonoNode, ns: MicroGraph.MonoExample.Runtime, asm: MicroGraph.MonoExample.Runtime}
+      data:
+        _onlyId: 10002
+        _childs: 17270000
+        _variableEdges: []
+    - rid: 1527686243179560966
+      type: {class: DestroyMonoNode, ns: MicroGraph.MonoExample.Runtime, asm: MicroGraph.MonoExample.Runtime}
+      data:
+        _onlyId: 10003
+        _childs: 15270000
+        _variableEdges: []
+    - rid: 1527686243179560967
+      type: {class: TransformVariable, ns: MicroGraph.MonoExample.Runtime, asm: MicroGraph.MonoExample.Runtime}
+      data:
+        _name: tran
+        _value: {fileID: 0}
+    - rid: 1527686243179560968
+      type: {class: FlowDebugNode, ns: MicroGraph.MonoExample.Runtime, asm: MicroGraph.MonoExample.Runtime}
+      data:
+        _onlyId: 10004
+        _childs: 
+        _variableEdges: []
+        msg: Awake
+        logType: 3
+    - rid: 1527686243179560969
+      type: {class: FlowDebugNode, ns: MicroGraph.MonoExample.Runtime, asm: MicroGraph.MonoExample.Runtime}
+      data:
+        _onlyId: 10005
+        _childs: 
+        _variableEdges: []
+        msg: Destory
+        logType: 3
+    - rid: 1527686243179560970
+      type: {class: FlowWaitNode, ns: MicroGraph.MonoExample.Runtime, asm: MicroGraph.MonoExample.Runtime}
+      data:
+        _onlyId: 10006
+        _childs: 14270000
+        _variableEdges: []
+        waitTime: 1
+        useUnscaled: 0
+    - rid: 1527686243179560971
+      type: {class: TransformMoveNode, ns: MicroGraph.MonoExample.Runtime, asm: MicroGraph.MonoExample.Runtime}
+      data:
+        _onlyId: 10007
+        _childs: 
+        _variableEdges:
+        - rid: 1527686243179560972
+        tran: {fileID: 0}
+        dir: {x: 0, y: 0, z: 1}
+        speed: 1
+    - rid: 1527686243179560972
+      type: {class: MicroVariableEdge, ns: MicroGraph.Runtime, asm: MicroGraph.Runtime}
+      data:
+        nodeId: 10008
+        isInput: 1
+        varName: tran
+        fieldName: tran

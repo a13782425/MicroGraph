@@ -1,0 +1,74 @@
+﻿.micro_search{
+	margin: 0px;
+	padding: 0px;
+	width: 256px;
+	height: 42px;
+	background-color: black;
+	position: absolute;
+	align-self: flex-end;
+	align-items: center;
+	flex-direction: row;
+}
+
+.micro_search > .micro_search_search_input{
+	width: 120px;
+	height: 32px;
+	background-color: black;
+	border-width: 0px;
+}
+
+.micro_search > .micro_search_search_input > #unity-text-input{
+	background-color: black;
+	border-width: 0px;
+	font-size: var(--micrograph-metrics-default-font_title_size);
+}
+
+.micro_search > .micro_search_search_input > #unity-text-input:hover{
+	transition-property: background-color;
+    transition-duration: 450ms;
+	background-color: var(--micrograph-colors-default-background);
+}
+.micro_search > .micro_search_search_input > #unity-text-input:focus{
+	background-color: var(--micrograph-colors-default-background);
+}
+.micro_search > .micro_search_search_input > #unity-text-input > .unity-text-element:focus{
+	background-color: var(--micrograph-colors-default-background);
+}
+
+.micro_search > .micro_search_result_label{
+	height: 32px;
+	-unity-text-align: middle-center;
+	font-size: var(--micrograph-metrics-default-font_title_size);
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
+.micro_search > SeparatorElement{
+	margin-left: 2px;
+}
+
+.micro_search > Button{
+	width: 16px;
+	height: 16px;
+	background-color: transparent;
+	border-width: 0;
+	border-radius: 0px;
+	border-color: transparent;
+	margin-left: 10px;
+	margin-right: 4px;
+}
+.micro_search > Button:hover{
+	-unity-background-image-tint-color: var(--micrograph-colors-default-text-hover);
+}
+
+.micro_search > .micro_search_prev_btn{
+	background-image: resource("__MicroGraph/Texture/Search/up_arrow");
+}
+
+.micro_search > .micro_search_next_btn{
+	background-image: resource("__MicroGraph/Texture/Search/down_arrow");
+}
+
+.micro_search > .micro_search_close_btn{
+	background-image: resource("__MicroGraph/Texture/Search/close");
+}

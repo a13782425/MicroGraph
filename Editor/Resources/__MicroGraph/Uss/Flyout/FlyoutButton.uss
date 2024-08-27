@@ -1,0 +1,53 @@
+FlyoutButton{
+	height: 36px;
+	padding-left: 4px;
+	border-bottom-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-bottom-right-radius: var(--micrograph-metrics-default-border_radius);
+	border-top-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-top-right-radius: var(--micrograph-metrics-default-border_radius);
+	border-width:var(--micrograph-metrics-default-border);
+	flex-direction: row;
+	align-items: center;
+	background-color: var(--micrograph-colors-toolbar_button-background);
+	border-color: var(--micrograph-colors-toolbar_button-border);
+}
+FlyoutButton > #tabIcon{
+	width: 24px;
+	height: 24px;
+}
+
+FlyoutButton > #contentLabel{
+	padding: 8px;
+	font-size: var(--micrograph-metrics-default-font_normal_size);
+	-unity-text-align: middle-center;
+	margin-left: 8px;
+	color: var(--micrograph-colors-toolbar_button-text);
+}
+FlyoutButton > #contentLabel:hover{
+	color: var(--micrograph-colors-toolbar_button-text-hover);
+}
+FlyoutButton.select{
+	background-color: var(--micrograph-colors-toolbar_button-background-select)
+}
+
+FlyoutButton.select > #tabIcon{
+	--unity-image-tint-color: rgba(255,255,255,255);
+}
+
+FlyoutButton.select > #contentLabel{
+	color: var(--micrograph-colors-toolbar_button-text-checked)
+}
+
+FlyoutButton:hover{
+	background-color: var(--micrograph-colors-toolbar_button-background-hover);
+}
+
+FlyoutButton > #contentLabel.hide{
+	display: none;
+}
+FlyoutButton.hide{
+	width: 36px;
+    align-self: center;
+	justify-content: center;
+	padding-left: 0px;
+}

@@ -1,0 +1,68 @@
+{	
+	/*default metrics*/
+	--micrograph-metrics-default-border:1px;
+	--micrograph-metrics-default-border_radius:3px;
+	--micrograph-metrics-default-font_normal_size:12px;
+	--micrograph-metrics-default-font_title_size:14px;
+	/*toolbar metrics*/
+	--micrograph-metrics-toolbar-height:22px;
+	--micrograph-metrics-toolbar_button-height:20px;
+
+	/*default colors*/
+	--micrograph-colors-default-border:#999999;
+	--micrograph-colors-default-text:#090909;
+	--micrograph-colors-default-text-hover:#090909;
+	--micrograph-colors-default-background:#A5A5A5;
+	--micrograph-colors-default-background-hover:rgba(245, 245, 245, 1);
+	--micrograph-colors-default-background-active:rgba(200, 200, 200, 1);
+	/*toolbar colors*/
+	--micrograph-colors-toolbar-background:#CBCBCB;/*工具栏控件的背景颜色*/
+	--micrograph-colors-toolbar-border:#999999;/*工具栏控件的边框颜色*/
+	/*toolbar colors*/
+	--micrograph-colors-toolbar_button-background:#CBCBCB;/*	工具栏按钮控件的背景颜色*/
+	--micrograph-colors-toolbar_button-background-checked:#EFEFEF;/*工具栏按钮控件在处于选中状态时的背景颜色*/
+	--micrograph-colors-toolbar_button-background-select:#46607C;/*工具栏按钮控件在处于选中状态时的背景颜色*/
+	--micrograph-colors-toolbar_button-background-focus:#C1C1C1;/*工具栏按钮控件获得焦点时的背景颜色*/
+	--micrograph-colors-toolbar_button-background-hover:#C1C1C1;/*工具栏按钮控件在鼠标指针悬停在其上方时的背景颜色*/
+	--micrograph-colors-toolbar_button-border:#999999;/*工具栏按钮控件的边框颜色*/
+	--micrograph-colors-toolbar_button-text:#090909;/*工具栏按钮控件的文本颜色*/
+	--micrograph-colors-toolbar_button-text-checked:#090909;/*工具栏按钮控件在处于选中状态时的文本颜色*/
+	--micrograph-colors-toolbar_button-text-hover:#090909;/*工具栏按钮控件在鼠标指针悬停在其上方时的文本颜色*/
+	/*box colors*/
+	--micrograph-colors-box-background:rgba(185, 185, 185, 0.9019608);
+	--micrograph-colors-box-border:transparent;
+	/*helpbox colors*/
+	--micrograph-colors-helpbox-background:rgba(235, 235, 235, 0.2039216);
+	--micrograph-colors-helpbox-border:#A9A9A9;
+	--micrograph-colors-helpbox-text:#161616;
+	/*highlight*/
+	--micrograph-colors-highlight-background:#3A72B0;/*选定项或选定文本的背景颜色*/
+	--micrograph-colors-highlight-background-hover:rgba(0, 0, 0, 0.0627451);/*项在鼠标指针悬停在其上方时的背景颜色*/
+	--micrograph-colors-highlight-background-inactive:#AEAEAE;/*控件没有焦点时选定项或选定文本的背景颜色*/
+	--micrograph-colors-highlight-text:#0032E6;/*选定项或选定文本的文本颜色*/
+	--micrograph-colors-highlight-text-inactive:#FFFFFF;/*控件没有焦点时选定项或选定文本的文本颜色*/
+	/*window*/
+	--micrograph-colors-window-background:#C8C8C8;/*窗口的背景颜色*/
+	--micrograph-colors-window-border:#939393;/*窗口的边框颜色*/
+	--micrograph-colors-window-text:#090909;/*窗口的文本颜色*/
+
+	/*theme*/
+	--micrograph-theme-background-color01:rgba(40, 40, 40, 0.8);
+	--micrograph-theme-border-color01:rgba(0, 0, 0, 1);
+
+	/*flyout icons*/
+	--micrograph-icons-flyout-flyout_all:resource("__MicroGraph/Texture/Flyout/flyout_all");
+	--micrograph-icons-flyout-flyout_del:resource("__MicroGraph/Texture/Flyout/flyout_del");
+	--micrograph-icons-flyout-flyout_graph:resource("__MicroGraph/Texture/Flyout/flyout_graph");
+	--micrograph-icons-flyout-flyout_hide:resource("__MicroGraph/Texture/Flyout/flyout_hide");
+	--micrograph-icons-flyout-flyout_load:resource("__MicroGraph/Texture/Flyout/flyout_load");
+	--micrograph-icons-flyout-flyout_save:resource("__MicroGraph/Texture/Flyout/flyout_save");
+	--micrograph-icons-flyout-flyout_show:resource("__MicroGraph/Texture/Flyout/flyout_show");
+	/*node icons*/
+	--micrograph-icons-node-lock:resource("__MicroGraph/Texture/Node/node_lock");
+	--micrograph-icons-node-unlock:resource("__MicroGraph/Texture/Node/node_unlock");
+	--micrograph-icons-node_root:resource("__MicroGraph/Texture/Node/node_root");
+	--micrograph-icons-node_flow:resource("__MicroGraph/Texture/Node/node_flow");
+	--micrograph-icons-node_condition:resource("__MicroGraph/Texture/Node/node_condition");
+	--micrograph-icons-node_wait:resource("__MicroGraph/Texture/Node/node_wait");
+}

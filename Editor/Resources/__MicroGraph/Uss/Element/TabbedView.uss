@@ -1,0 +1,19 @@
+.unity-tabbed-view{
+    flex-grow: 1;
+}
+
+.unity-tabbed-view__tabs-container {
+    display: flex;
+    background-color: #252525;
+    flex-direction: row;
+}
+
+.unity-tabbed-view__content-container {
+    flex-grow: 1;
+    padding: 2px;
+}
+
+.unity-tabs-scrollview #unity-tabs-container{
+    flex-grow: 1;
+    flex-shrink: 0;
+}

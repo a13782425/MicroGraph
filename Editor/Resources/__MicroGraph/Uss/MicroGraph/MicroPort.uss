@@ -1,0 +1,30 @@
+.basenodeport_input {
+	--port-color: #0080FF;
+}
+
+.basenodeport_output {
+	--port-color: #0080FF;
+}
+.nodeport_input {
+	--port-color: #0080FF;
+}
+
+.nodeport_output {
+	--port-color: #0080FF;
+}
+.input.fixed_width_port > #type {
+	min-width: 0px;
+	max-width: 48px;
+}
+.output #type {
+	min-width: 0px;
+	max-width: none;
+}
+/*±äÁ¿*/
+
+.var_node_port.port > #connector{
+	border-radius: 0px;
+}
+.var_node_port.port > #connector > #cap{
+	border-radius: 0px;
+}

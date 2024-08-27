@@ -1,0 +1,23 @@
+{
+  "name": "com.timeslip.micrograph",
+  "displayName": "MicroGraph",
+  "version": "0.1.0-pre.27",
+  "unity": "2021.3",
+  "description": "\u5fae\u56fe\uff0c\u7b80\u5355\u7684\u53ef\u89c6\u5316\u7f16\u7a0b\u5de5\u5177",
+  "author": {
+    "name": "timeslip"
+  },
+  "changelogUrl": "http://blog.timeslip.cn/archives/micrograph-geng-xin-ri-zhi",
+  "samples": [
+    {
+      "displayName": "流程示例",
+      "description": "简单的流程示例",
+      "path": "Samples~/FlowExample"
+    },
+	{
+      "displayName": "Mono示例",
+      "description": "基于Mono的微图",
+      "path": "Samples~/MonoExample"
+    }
+  ]
+}

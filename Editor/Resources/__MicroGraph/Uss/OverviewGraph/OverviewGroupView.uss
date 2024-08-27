@@ -1,0 +1,31 @@
+.overviewGroup{
+}
+.overviewGroup > .mainContainer > #headerContainer{
+	border-bottom-width: var(--micrograph-metrics-default-border);
+	border-top-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-top-right-radius: var(--micrograph-metrics-default-border_radius);
+	flex-direction: row;
+}
+.overviewGroup_title{
+	font-size: var(--micrograph-metrics-default-font_title_size);
+	-unity-font-style: bold;
+	-unity-text-align: middle-left;
+	color: var(--micrograph-colors-default-text);
+	margin-left: 2px;
+}
+.overviewGroup_column_input {
+	margin: 0px 3px 0px 3px;
+	padding-left: 3px;
+	border-left-width: 4px;
+}
+.overviewGroup_column_input > Label{
+	font-size: var(--micrograph-metrics-default-font_title_size);
+	-unity-font-style: bold;
+	color: var(--micrograph-colors-default-text);
+	-unity-text-align: middle-left;
+	padding: 0px;
+	min-width: 36px;
+}
+.overviewGroup_column_input > IntegerInput{
+	min-width: 64px;
+}

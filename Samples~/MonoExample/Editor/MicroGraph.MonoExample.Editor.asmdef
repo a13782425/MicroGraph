@@ -1,0 +1,18 @@
+{
+    "name": "MicroGraph.MonoExample.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6f17be580b468ee4da482e11d26411b0",
+        "GUID:c996a5c37e5d7a046a084efd1bfbf1ba",
+        "GUID:0e7426cb50b61db48860b0e7ed3de949"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

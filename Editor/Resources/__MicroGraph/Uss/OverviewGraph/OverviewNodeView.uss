@@ -1,0 +1,7 @@
+
+.time_label{
+	color: var(--micrograph-colors-default-text);
+	margin-left: 8px;
+	margin-right: 8px;
+	-unity-text-align: middle-center;
+}

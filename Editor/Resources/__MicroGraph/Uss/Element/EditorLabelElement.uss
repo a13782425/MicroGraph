@@ -1,0 +1,17 @@
+EditorLabelElement{
+	flex-grow: 1;
+	padding: 6px;
+}
+EditorLabelElement > #title_label{
+	flex-grow: 1;
+	font-size: var(--micrograph-metrics-default-font_title_size);
+	-unity-text-align: middle-center;
+}
+EditorLabelElement > #input_field{
+	display: none;
+	flex-grow: 1;
+}
+.micro_editor_title > #title_label{
+	-unity-font-style: bold;
+	text-shadow: 1px 1px black;
+}

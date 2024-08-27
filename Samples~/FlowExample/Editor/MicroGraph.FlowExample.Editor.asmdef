@@ -1,0 +1,17 @@
+{
+    "name": "MicroGraph.FlowExample.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6f17be580b468ee4da482e11d26411b0",
+        "GUID:c88ed10feac392c419c2004c6701c3e6"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,21 @@
+﻿
+.internal_variable_node{
+    min-width: 64px;
+    width: auto;
+}
+
+.internal_variable_node #node-border{
+    background-color: var(--micrograph-colors-default-border);
+    border-radius: 16px;
+}
+.internal_variable_node #selection-border{
+    border-radius: 18px;
+}
+.internal_variable_node #title{
+    align-items: center;    
+}
+.internal_variable_node EditorLabelElement > #title_label{
+    color: var(--micrograph-colors-default-text);
+    margin-left: 0px;
+    flex-grow: 1;
+}

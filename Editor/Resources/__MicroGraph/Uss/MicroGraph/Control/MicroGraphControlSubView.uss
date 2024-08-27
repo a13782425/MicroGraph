@@ -1,0 +1,35 @@
+﻿.micrographcontrol{
+	margin: 4px;
+	overflow: hidden;
+}
+
+.micrographcontrol > .name_label{
+	-unity-font-style: bold;
+	font-size: 18px;
+	text-shadow: 1px 1px black;
+	margin-bottom: 6px;
+	overflow: hidden;
+	white-space: normal;
+}
+.micrographcontrol > .des_label{
+	-unity-font-style: italic;
+	color: rgba(137,137,137,1);
+	margin-bottom: 6px;
+}
+.micrographcontrol > .time_label{
+	color: var(--micrograph-colors-default-text);
+}
+.micrographcontrol > .path_label{
+	margin-top: 6px;
+	margin-bottom: 6px;
+	color: var(--micrograph-colors-default-text);
+	overflow: hidden;
+	white-space: normal;
+}
+.micrographcontrol > Button{
+	-unity-font-style: bold;
+	margin-top: 6px;
+	font-size: 14px;
+	text-shadow: 1px 1px black;
+	margin-bottom: 6px;
+}

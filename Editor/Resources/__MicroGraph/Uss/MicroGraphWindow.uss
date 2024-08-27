@@ -1,0 +1,32 @@
+#contentContainer {
+	width: 100%;
+	height: 100%;
+	flex-direction: row;
+	border-width: var(--micrograph-metrics-default-border);
+    border-color: var(--micrograph-colors-toolbar-border);
+	-unity-font-definition: var(--micrograph-font-ali-puhui-regular);
+}
+
+
+#contentContainer > #rightContent{
+	flex-grow: 1;
+	flex-direction: column;
+}
+#contentContainer > #rightContent > #topToolbarContent  {
+	width: 100%;
+	height: var(--micrograph-metrics-toolbar-height);
+	border-bottom-width: var(--micrograph-metrics-default-border);
+    border-color: var(--micrograph-colors-toolbar-border);
+	background-color: var(--micrograph-colors-toolbar-background);
+}
+#contentContainer > #rightContent > #graphContent{
+	flex-grow: 1;
+}
+
+#contentContainer > #rightContent > #bottomToolbarContent{
+	width: 100%;
+	height: var(--micrograph-metrics-toolbar-height);
+	border-top-width: var(--micrograph-metrics-default-border);
+    border-color: var(--micrograph-colors-toolbar-border);
+	background-color: var(--micrograph-colors-toolbar-background);
+}

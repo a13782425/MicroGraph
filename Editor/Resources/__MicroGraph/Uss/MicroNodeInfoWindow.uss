@@ -1,0 +1,83 @@
+﻿.content_container{
+	flex-grow: 1;
+}
+.title_container{
+	flex-direction: row;
+	padding-left: 4px;
+	height: 24px;
+	background-color: var(--micrograph-colors-toolbar-background);
+	border-bottom-width: var(--micrograph-metrics-default-border);
+	border-bottom-color: var(--micrograph-colors-toolbar-border);
+	border-top-width: var(--micrograph-metrics-default-border);
+	border-top-color: var(--micrograph-colors-toolbar-border);
+}
+.graph_popup > Label{
+	min-width: auto;
+	-unity-font-style: bold;
+	text-shadow: 1px 1px black;
+}
+.placeholder{
+	flex-grow: 1;
+}
+.node_search_input{
+	align-self: flex-end;
+	margin-right: 4px;
+}
+.node_search_input > Label{
+	min-width: auto;
+	-unity-font-style: bold;
+	text-shadow: 1px 1px black;
+}
+.node_search_input > Label{
+	min-width: auto;
+}
+.node_search_input > #unity-text-input{
+	min-width: 128px;
+}
+
+.node_listview{
+	flex-grow: 1;
+	padding: 4px 2px 4px 2px;
+	background-color: var(--micrograph-colors-default-background);
+}
+
+.node_usage_element .normal_content{
+	flex-direction: row;
+	border-bottom-width: var(--micrograph-metrics-default-border);
+	border-bottom-color: var(--micrograph-colors-toolbar-border);
+	border-top-width: var(--micrograph-metrics-default-border);
+	border-top-color: var(--micrograph-colors-toolbar-border);
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+.node_usage_element .normal_content Label{
+	flex-basis: 1px;
+	flex-grow: 1;
+	flex-shrink: 1;
+	-unity-text-align: middle-left;
+}
+.node_usage_element .normal_content .usage_arrow{
+	width: 14px;
+	height: 14px;
+	margin-left: 2px;
+	margin-right: 2px;
+	align-self: center;
+}
+.node_usage_element .normal_content .enable_label{
+	align-self: center;
+	margin: 3px;
+}
+.node_usage_element .normal_content .name_label{
+	flex-grow: 5;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.node_usage_element .usage_content{
+	margin-left: 48px;
+}
+.node_usage_element .usage_content Label{
+	margin-bottom: 2px;
+	border-left-width: 2px;
+	border-left-color: var(--micrograph-colors-toolbar-border);
+}

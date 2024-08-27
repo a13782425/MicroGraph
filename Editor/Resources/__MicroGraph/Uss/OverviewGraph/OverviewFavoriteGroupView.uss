@@ -1,0 +1,49 @@
+.overviewGroup{
+}
+.overviewGroup > .mainContainer > #headerContainer{
+	border-bottom-width: var(--micrograph-metrics-default-border);
+	border-top-left-radius: var(--micrograph-metrics-default-border_radius);
+	border-top-right-radius: var(--micrograph-metrics-default-border_radius);
+	flex-direction: row;
+}
+.favorite_icon{
+	background-image: resource("__MicroGraph/Texture/Common/favorite");
+	width: 18px;
+	height: 18px;
+	align-self: center;
+	margin-left: 2px;
+	/* -unity-background-image-tint-color: rgba(255,255,0,1); */
+}
+.overviewGroup_title{
+	padding: 0px;
+	flex-grow: 0;
+	margin-left: 2px;
+}
+.overviewGroup_title > #title_label{
+	-unity-text-align: middle-left;
+}
+.overviewGroup_column_input {
+	margin: 0px 3px 0px 3px;
+	padding-left: 3px;
+	border-left-width: 4px;
+}
+.overviewGroup_column_input > Label{
+	font-size: var(--micrograph-metrics-default-font_title_size);
+	-unity-font-style: bold;
+	color: var(--micrograph-colors-default-text);
+	padding: 0px;
+	min-width: 36px;
+	-unity-text-align: middle-left;
+}
+.overviewGroup_column_input > IntegerInput{
+	min-width: 64px;
+}
+.overviewGroup_palette_container{
+	flex-grow: 1;
+	/* flex-direction: column-reverse; */
+	/* align-content: flex-end; */
+}
+.overviewGroup_palette{
+	width: 48px;
+	align-self: flex-end;
+}
