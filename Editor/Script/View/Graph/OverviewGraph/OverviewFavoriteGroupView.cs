@@ -54,33 +54,33 @@ namespace MicroGraph.Editor
         internal void Initialize(OverviewFavoriteGroupInfo favoriteGroupInfo)
         {
             this._favoriteGroupInfo = favoriteGroupInfo;
-            this.title = favoriteGroupInfo.favoriteName;
-            refreshColor(favoriteGroupInfo.color);
+            this.title = favoriteGroupInfo.FavoriteName;
+            refreshColor(favoriteGroupInfo.Color);
             Refresh();
-            _columnField.value = favoriteGroupInfo.columnCount;
+            _columnField.value = favoriteGroupInfo.ColumnCount;
             _columnField.RegisterValueChangedCallback(a =>
             {
-                favoriteGroupInfo.columnCount = a.newValue;
+                favoriteGroupInfo.ColumnCount = a.newValue;
                 MicroGraphUtils.SaveConfig();
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.OVERVIEW_CHANGED);
             });
-            this.SetPosition(new Rect(favoriteGroupInfo.pos, Vector2.one));
+            this.SetPosition(new Rect(favoriteGroupInfo.Pos, Vector2.one));
             this.RegisterCallback<GeometryChangedEvent>(onGeometryChanged);
         }
         private void Title_label_onRename(string oldName, string newName)
         {
-            if (!MicroGraphUtils.TitleValidity(newName, MicroGraphUtils.EditorConfig.groupTitleLength))
+            if (!MicroGraphUtils.TitleValidity(newName, MicroGraphUtils.EditorConfig.GroupTitleLength))
             {
                 title = oldName;
                 owner.owner.ShowNotification(new GUIContent("标题不合法"), 2f);
                 return;
             }
-            _favoriteGroupInfo.favoriteName = newName;
+            _favoriteGroupInfo.FavoriteName = newName;
             MicroGraphEventListener.OnEventAll(MicroGraphEventIds.OVERVIEW_CHANGED);
         }
         private void m_paletteChange(ChangeEvent<Color> evt)
         {
-            _favoriteGroupInfo.color = evt.newValue;
+            _favoriteGroupInfo.Color = evt.newValue;
             MicroGraphUtils.SaveConfig();
             MicroGraphEventListener.OnEventAll(MicroGraphEventIds.OVERVIEW_CHANGED);
         }
@@ -115,7 +115,7 @@ namespace MicroGraph.Editor
 
         private void m_deleteFavoriteGroup(DropdownMenuAction action)
         {
-            if (_favoriteGroupInfo.graphs.Count > 0)
+            if (_favoriteGroupInfo.Graphs.Count > 0)
             {
                 if (EditorUtility.DisplayDialog("提示", "当前收藏夹不为空,是否删除", "是", "否"))
                     this.owner.DeleteElements(this.containedElements);
@@ -135,21 +135,21 @@ namespace MicroGraph.Editor
         /// <param name="eventArgs"></param>
         internal void Refresh()
         {
-            this.title = favoriteGroupInfo.favoriteName;
-            this._columnField.SetValueWithoutNotify(_favoriteGroupInfo.columnCount);
-            refreshColor(_favoriteGroupInfo.color);
+            this.title = favoriteGroupInfo.FavoriteName;
+            this._columnField.SetValueWithoutNotify(_favoriteGroupInfo.ColumnCount);
+            refreshColor(_favoriteGroupInfo.Color);
             var nodeViewList = this.containedElements.OfType<OverviewNodeView>().ToList();
             foreach (var item in nodeViewList)
             {
                 item.IsRefresh = false;
             }
-            for (int i = _favoriteGroupInfo.graphs.Count - 1; i >= 0; i--)
+            for (int i = _favoriteGroupInfo.Graphs.Count - 1; i >= 0; i--)
             {
-                string item = _favoriteGroupInfo.graphs[i];
+                string item = _favoriteGroupInfo.Graphs[i];
                 var graphSummaryModel = MicroGraphProvider.GetGraphSummary(item);
                 if (graphSummaryModel == null)
                 {
-                    _favoriteGroupInfo.graphs.RemoveAt(i);
+                    _favoriteGroupInfo.Graphs.RemoveAt(i);
                     continue;
                 }
                 var nodeView = nodeViewList.FirstOrDefault(a => a.SummaryModel == graphSummaryModel);
@@ -181,17 +181,17 @@ namespace MicroGraph.Editor
         public override void SetPosition(Rect newPos)
         {
             base.SetPosition(newPos);
-            _favoriteGroupInfo.pos = newPos.position;
+            _favoriteGroupInfo.Pos = newPos.position;
         }
 
         internal void ResetElementPosition()
         {
-            Vector2 startPosition = _favoriteGroupInfo.pos + new Vector2(24f, 47f);
+            Vector2 startPosition = _favoriteGroupInfo.Pos + new Vector2(24f, 47f);
 
             var nodeViews = this.containedElements.OfType<OverviewNodeView>().ToList();
             nodeViews.Sort((a, b) => b.SummaryModel.ModifyTime.CompareTo(a.SummaryModel.ModifyTime));
 
-            bool isSingleRow = _favoriteGroupInfo.columnCount <= 0;
+            bool isSingleRow = _favoriteGroupInfo.ColumnCount <= 0;
             float horizontalOffset = 0; // 用于横向累加元素位置
 
             if (isSingleRow)
@@ -207,7 +207,7 @@ namespace MicroGraph.Editor
             else
             {
                 // 多列布局
-                int columnCount = _favoriteGroupInfo.columnCount;
+                int columnCount = _favoriteGroupInfo.ColumnCount;
                 float[] columnWidths = new float[columnCount]; // 记录每列宽度
                 float[] columnHeights = new float[columnCount]; // 记录每列高度
                 for (int i = 0; i < nodeViews.Count; i++)

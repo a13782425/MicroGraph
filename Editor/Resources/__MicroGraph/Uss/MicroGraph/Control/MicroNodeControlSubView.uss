@@ -11,7 +11,7 @@
 	white-space: normal;
 	-unity-text-align: middle-center;
 }
-.micronodecontrol > .nodecontent{
+.micronodecontrol > .nodecontainer{
 
 }
 .micronodecontrol .title_label{
@@ -30,16 +30,16 @@
 	white-space: normal;
 }
 
-.micronodecontrol .var_content{
+.micronodecontrol .var_container{
 	margin-left: 6px;
 	margin-bottom: 6px;
 }
-.micronodecontrol .var_sub_content{
+.micronodecontrol .var_sub_container{
 	margin-top: 4px;
 	border-top-width: 4px;
 	border-top-color: var(--micrograph-colors-toolbar_button-background-select);
 }
-.micronodecontrol .var_content Label{
+.micronodecontrol .var_container Label{
 	min-width: 0px;
 	overflow: hidden;
 	white-space: normal;

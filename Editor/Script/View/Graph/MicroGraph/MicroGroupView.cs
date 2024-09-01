@@ -93,7 +93,7 @@ namespace MicroGraph.Editor
         }
         protected override void OnGroupRenamed(string oldName, string newName)
         {
-            if (!MicroGraphUtils.TitleValidity(newName, MicroGraphUtils.EditorConfig.groupTitleLength))
+            if (!MicroGraphUtils.TitleValidity(newName, MicroGraphUtils.EditorConfig.GroupTitleLength))
             {
                 title = oldName;
                 _owner.owner.ShowNotification(new GUIContent("标题不合法"), MicroGraphUtils.NOTIFICATION_TIME);

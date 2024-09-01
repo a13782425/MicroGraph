@@ -67,9 +67,18 @@ namespace MicroGraph.Editor
         {
             if (element == null)
                 return;
-            element.styleSheets.Add(MicroGraphUtils.LoadRes<StyleSheet>(stylePath));
+            StyleSheet styleSheet = MicroGraphUtils.LoadRes<StyleSheet>(stylePath);
+            if (styleSheet == null)
+            {
+                Debug.LogError($"样式：{stylePath} 不存在");
+                return;
+            }
+            element.styleSheets.Add(styleSheet);
         }
-
+        public static void AddTailwindStyleSheet(this VisualElement ve) 
+        {
+            ve.AddStyleSheet("Uss/Tailwind");
+        }
         internal static void RemoveStyleSheet(this VisualElement element, string stylePath)
         {
             if (element == null)

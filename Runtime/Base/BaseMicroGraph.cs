@@ -10,8 +10,6 @@ namespace MicroGraph.Runtime
     [Serializable]
     public class BaseMicroGraph : ScriptableObject, IMicroGraphClone
     {
-        private static readonly List<BaseMicroNode> EMPTY_LIST = new List<BaseMicroNode>();
-
         [SerializeField]
         private string _onlyId = "";
         /// <summary>
@@ -80,12 +78,6 @@ namespace MicroGraph.Runtime
             }
             Nodes.ForEach(n => n.Initialize(this));
         }
-        /// <summary>
-        /// 获取开始节点
-        /// 开始节点可以有多个
-        /// </summary>
-        /// <returns></returns>
-        public virtual List<BaseMicroNode> GetStartNode() => EMPTY_LIST;
 
         /// <summary>
         /// 根据节点Id获取节点

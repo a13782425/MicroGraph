@@ -46,7 +46,7 @@ namespace MicroGraph.Editor
         public void Show()
         {
             this.SetDisplay(true);
-            if (!string.IsNullOrWhiteSpace(MicroGraphUtils.EditorConfig.editorFont))
+            if (!string.IsNullOrWhiteSpace(MicroGraphUtils.EditorConfig.EditorFont))
             {
 
 #if UNITY_2022_1_OR_NEWER
@@ -56,10 +56,10 @@ namespace MicroGraph.Editor
 #endif
                 {
                     _fontField.SetValueWithoutNotify(null);
-                    MicroGraphUtils.EditorConfig.editorFont = string.Empty;
+                    MicroGraphUtils.EditorConfig.EditorFont = string.Empty;
                 }
                 else
-                    _fontField.SetValueWithoutNotify(AssetDatabase.LoadAssetAtPath<Font>(MicroGraphUtils.EditorConfig.editorFont));
+                    _fontField.SetValueWithoutNotify(AssetDatabase.LoadAssetAtPath<Font>(MicroGraphUtils.EditorConfig.EditorFont));
                 //Font font = AssetDatabase.LoadAssetAtPath<Font>(MicroGraphUtils.EditorConfig.editorFont);
                 //_fontField.SetValueWithoutNotify(AssetDatabase.LoadAssetAtPath<Font>(MicroGraphUtils.EditorConfig.editorFont));
                 //if (font == null)
@@ -67,12 +67,12 @@ namespace MicroGraph.Editor
                 //    MicroGraphUtils.EditorConfig.editorFont = string.Empty;
                 //}
             }
-            _undoSliderInt.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.undoStep);
-            _gridToggle.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.defaultOpenGrid);
-            _zoomToggle.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.defaultOpenZoom);
-            _graphTitleSliderInt.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.graphTitleLength);
-            _nodeTitleSliderInt.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.nodeTitleLength);
-            _groupTitleSliderInt.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.groupTitleLength);
+            _undoSliderInt.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.UndoStep);
+            _gridToggle.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.DefaultOpenGrid);
+            _zoomToggle.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.DefaultOpenZoom);
+            _graphTitleSliderInt.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.GraphTitleLength);
+            _nodeTitleSliderInt.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.NodeTitleLength);
+            _groupTitleSliderInt.SetValueWithoutNotify(MicroGraphUtils.EditorConfig.GroupTitleLength);
         }
         public void Hide()
         {
@@ -86,81 +86,81 @@ namespace MicroGraph.Editor
             _fontField.RegisterValueChangedCallback((a) =>
             {
                 if (a.newValue != null)
-                    MicroGraphUtils.EditorConfig.editorFont = AssetDatabase.GetAssetPath(a.newValue);
+                    MicroGraphUtils.EditorConfig.EditorFont = AssetDatabase.GetAssetPath(a.newValue);
                 else
-                    MicroGraphUtils.EditorConfig.editorFont = string.Empty;
+                    MicroGraphUtils.EditorConfig.EditorFont = string.Empty;
                 MicroGraphUtils.RefreshFont();
-                MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED, nameof(MicroGraphUtils.EditorConfig.editorFont));
+                MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED, nameof(MicroGraphUtils.EditorConfig.EditorFont));
             });
             _scrollView.Add(_fontField);
 
             _recordSavePathToggle = new Toggle("记录上次保存路径：");
-            _recordSavePathToggle.value = MicroGraphUtils.EditorConfig.recordSavePath;
+            _recordSavePathToggle.value = MicroGraphUtils.EditorConfig.RecordSavePath;
             _recordSavePathToggle.RegisterValueChangedCallback(a =>
             {
-                MicroGraphUtils.EditorConfig.recordSavePath = a.newValue;
+                MicroGraphUtils.EditorConfig.RecordSavePath = a.newValue;
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED);
             });
             _scrollView.Add(_recordSavePathToggle);
 
             _gridToggle = new Toggle("默认开启网格：");
-            _gridToggle.value = MicroGraphUtils.EditorConfig.defaultOpenGrid;
+            _gridToggle.value = MicroGraphUtils.EditorConfig.DefaultOpenGrid;
             _gridToggle.RegisterValueChangedCallback(a =>
             {
-                MicroGraphUtils.EditorConfig.defaultOpenGrid = a.newValue;
+                MicroGraphUtils.EditorConfig.DefaultOpenGrid = a.newValue;
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED);
             });
             _scrollView.Add(_gridToggle);
 
             _zoomToggle = new Toggle("默认开启缩放：");
-            _zoomToggle.value = MicroGraphUtils.EditorConfig.defaultOpenZoom;
+            _zoomToggle.value = MicroGraphUtils.EditorConfig.DefaultOpenZoom;
             _zoomToggle.RegisterValueChangedCallback(a =>
             {
-                MicroGraphUtils.EditorConfig.defaultOpenZoom = a.newValue;
+                MicroGraphUtils.EditorConfig.DefaultOpenZoom = a.newValue;
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED);
             });
             _scrollView.Add(_zoomToggle);
 
             _undoSliderInt = new SliderInt("回退步数：", 1, 1024);
-            _undoSliderInt.value = MicroGraphUtils.EditorConfig.undoStep;
+            _undoSliderInt.value = MicroGraphUtils.EditorConfig.UndoStep;
             _undoSliderInt.showInputField = true;
             _undoSliderInt.style.flexShrink = 1;
             _undoSliderInt.RegisterValueChangedCallback(a =>
             {
-                MicroGraphUtils.EditorConfig.undoStep = a.newValue;
+                MicroGraphUtils.EditorConfig.UndoStep = a.newValue;
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED);
             });
             _scrollView.Add(_undoSliderInt);
 
             _graphTitleSliderInt = new SliderInt("图名长度：", 1, 1024);
-            _graphTitleSliderInt.value = MicroGraphUtils.EditorConfig.graphTitleLength;
+            _graphTitleSliderInt.value = MicroGraphUtils.EditorConfig.GraphTitleLength;
             _graphTitleSliderInt.showInputField = true;
             _graphTitleSliderInt.style.flexShrink = 1;
             _graphTitleSliderInt.RegisterValueChangedCallback(a =>
             {
-                MicroGraphUtils.EditorConfig.graphTitleLength = a.newValue;
+                MicroGraphUtils.EditorConfig.GraphTitleLength = a.newValue;
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED);
             });
             _scrollView.Add(_graphTitleSliderInt);
 
             _nodeTitleSliderInt = new SliderInt("节点名长度：", 1, 1024);
-            _nodeTitleSliderInt.value = MicroGraphUtils.EditorConfig.nodeTitleLength;
+            _nodeTitleSliderInt.value = MicroGraphUtils.EditorConfig.NodeTitleLength;
             _nodeTitleSliderInt.showInputField = true;
             _nodeTitleSliderInt.style.flexShrink = 1;
             _nodeTitleSliderInt.RegisterValueChangedCallback(a =>
             {
-                MicroGraphUtils.EditorConfig.nodeTitleLength = a.newValue;
+                MicroGraphUtils.EditorConfig.NodeTitleLength = a.newValue;
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED);
             });
             _scrollView.Add(_nodeTitleSliderInt);
 
             _groupTitleSliderInt = new SliderInt("分组名长度：", 1, 1024);
-            _groupTitleSliderInt.value = MicroGraphUtils.EditorConfig.groupTitleLength;
+            _groupTitleSliderInt.value = MicroGraphUtils.EditorConfig.GroupTitleLength;
             _groupTitleSliderInt.showInputField = true;
             _groupTitleSliderInt.style.flexShrink = 1;
             _groupTitleSliderInt.RegisterValueChangedCallback(a =>
             {
-                MicroGraphUtils.EditorConfig.groupTitleLength = a.newValue;
+                MicroGraphUtils.EditorConfig.GroupTitleLength = a.newValue;
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.EDITOR_SETTING_CHANGED);
             });
             _scrollView.Add(_groupTitleSliderInt);

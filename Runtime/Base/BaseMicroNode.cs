@@ -57,6 +57,7 @@ namespace MicroGraph.Runtime
         public virtual void PushVariable() { generatePushVariable(); }
         /// <summary>
         /// 节点在创建时执行
+        /// <para>仅会执行一次</para>
         /// </summary>
         public virtual bool OnInit() { _state = NodeState.Inited; return true; }
         /// <summary>
@@ -73,7 +74,12 @@ namespace MicroGraph.Runtime
         /// </summary>
         /// <returns></returns>
         public virtual bool OnUpdate(float deltaTime, float unscaledDeltaTime) => true;
-
+        /// <summary>
+        /// 重置
+        /// <para>当该节点被重复使用，则会调用该方法</para>
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool OnReset() => true;
         /// <summary>
         /// 节点停止调用
         /// 只有正在执行的节点才会被调用

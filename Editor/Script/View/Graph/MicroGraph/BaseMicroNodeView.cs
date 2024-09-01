@@ -45,7 +45,7 @@ namespace MicroGraph.Editor
             get => editorInfo.Title;
             set
             {
-                if (!MicroGraphUtils.TitleValidity(value, MicroGraphUtils.EditorConfig.nodeTitleLength))
+                if (!MicroGraphUtils.TitleValidity(value, MicroGraphUtils.EditorConfig.NodeTitleLength))
                 {
                     _titleLabel.text = editorInfo.Title;
                     owner.owner.ShowNotification(new GUIContent("标题不合法"), NOTIFICATION_TIME);

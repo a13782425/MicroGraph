@@ -28,7 +28,7 @@ namespace MicroGraph.Editor
         {
             if (isBusy)
                 return;
-            if (_undoDatas.Count >= MicroGraphUtils.EditorConfig.undoStep)
+            if (_undoDatas.Count >= MicroGraphUtils.EditorConfig.UndoStep)
                 _undoDatas.RemoveFirst();
             MicroRecordOperateData operateData = default;
             if (_undoDatas.Count > 0)

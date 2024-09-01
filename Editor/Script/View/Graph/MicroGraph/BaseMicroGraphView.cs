@@ -54,10 +54,6 @@ namespace MicroGraph.Editor
         /// 当前样式
         /// </summary>
         public IStyle Style { get => _internalGraphView.style; }
-        /// <summary>
-        /// 变量面板
-        /// </summary>
-        //private MicroVariablePanel _variablePanel;
 
         /// <summary>
         /// 控制面板
@@ -700,20 +696,28 @@ namespace MicroGraph.Editor
                 owner.ShowNotification(new GUIContent("创建模板失败,请至少选择两个节点"), NOTIFICATION_TIME);
                 return;
             }
+            string graphClassName = this.CategoryModel.GraphType.FullName;
+            MicroGraphConfig graphEditorModel = MicroGraphUtils.EditorConfig.GraphConfigs.FirstOrDefault(a => a.GraphClassName == graphClassName);
+            if (graphEditorModel==null)
+            {
+                graphEditorModel = new MicroGraphConfig();
+                graphEditorModel.GraphClassName = graphClassName;
+                MicroGraphUtils.EditorConfig.GraphConfigs.Add(graphEditorModel);
+            }
             MicroGraphTemplateModel model = new MicroGraphTemplateModel();
-            model.title = "模板";
-            model.graphClassName = this.CategoryModel.GraphType.FullName;
+            model.Title = "模板";
+            model.GraphClassName = this.CategoryModel.GraphType.FullName;
             foreach (var item in View.selection)
             {
                 if (item is MicroVariableNodeView.InternalNodeView varNodeView)
                 {
                     string varName = varNodeView.nodeView.Target.Name;
-                    if (model.vars.FirstOrDefault(a => a.varName == varName) == null)
+                    if (model.Vars.FirstOrDefault(a => a.VarName == varName) == null)
                         MicroGraphProvider.GetRecordTemplateImpl(typeof(MicroVariableEditorInfo))?.Record(model, varNodeView.nodeView.editorInfo.EditorInfo);
                 }
                 MicroGraphProvider.GetRecordTemplateImpl(item.GetType())?.Record(model, item);
             }
-            MicroGraphUtils.EditorConfig.graphTemplates.Add(model);
+            graphEditorModel.Templates.Add(model);
             MicroGraphUtils.SaveConfig();
             MicroGraphEventListener.OnEventAll(MicroGraphEventIds.GRAPH_TEMPLATE_CHANGED);
             owner.ShowNotification(new GUIContent("创建模板成功"), NOTIFICATION_TIME);
@@ -1267,18 +1271,18 @@ namespace MicroGraph.Editor
             MicroGraphTemplateModel model = template.templateModel;
             bool hasNewVar = false;
             bool needCreateVar = false;
-            foreach (var item in model.vars)
+            foreach (var item in model.Vars)
             {
-                MicroVariableEditorInfo variable = editorInfo.Variables.FirstOrDefault(a => a.Name == item.varName);
+                MicroVariableEditorInfo variable = editorInfo.Variables.FirstOrDefault(a => a.Name == item.VarName);
                 if (variable == null)
                     hasNewVar = true;
-                else if (variable.Target.GetValueType().FullName != item.varClassName)
+                else if (variable.Target.GetValueType().FullName != item.VarClassName)
                 {
                     string[] strs = variable.Target.GetValueType().FullName.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
                     string targetName = strs[strs.Length - 1];
-                    strs = item.varClassName.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+                    strs = item.VarClassName.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
                     string templateName = strs[strs.Length - 1];
-                    owner.ShowNotification(new GUIContent($"变量:{item.varName}已存在, 但类型不一致, 无法使用改模板\n当前类型:{targetName}, 模板类型:{templateName}"), NOTIFICATION_TIME);
+                    owner.ShowNotification(new GUIContent($"变量:{item.VarName}已存在, 但类型不一致, 无法使用改模板\n当前类型:{targetName}, 模板类型:{templateName}"), NOTIFICATION_TIME);
                     return;
                 }
             }
@@ -1293,23 +1297,23 @@ namespace MicroGraph.Editor
             operateData.centerPos = calcRect.center;
             if (needCreateVar)
             {
-                foreach (MicroVarSerializeModel item in model.vars)
+                foreach (MicroVarSerializeModel item in model.Vars)
                 {
-                    MicroVariableEditorInfo variable = editorInfo.Variables.FirstOrDefault(a => a.Name == item.varName);
+                    MicroVariableEditorInfo variable = editorInfo.Variables.FirstOrDefault(a => a.Name == item.VarName);
                     if (variable != null)
                         continue;
                     MicroGraphProvider.GetRestoreTemplateImpl(item.GetType())?.Restore(operateData, item);
                 }
             }
-            foreach (MicroNodeSerializeModel item in model.nodes)
+            foreach (MicroNodeSerializeModel item in model.Nodes)
                 MicroGraphProvider.GetRestoreTemplateImpl(item.GetType())?.Restore(operateData, item);
-            foreach (MicroVarNodeSerializeModel item in model.varNodes)
+            foreach (MicroVarNodeSerializeModel item in model.VarNodes)
                 MicroGraphProvider.GetRestoreTemplateImpl(item.GetType())?.Restore(operateData, item);
-            foreach (MicroStickySerializeModel item in model.stickys)
+            foreach (MicroStickySerializeModel item in model.Stickys)
                 MicroGraphProvider.GetRestoreTemplateImpl(item.GetType())?.Restore(operateData, item);
-            foreach (MicroGroupSerializeModel item in model.groups)
+            foreach (MicroGroupSerializeModel item in model.Groups)
                 MicroGraphProvider.GetRestoreTemplateImpl(item.GetType())?.Restore(operateData, item);
-            foreach (MicroEdgeSerializeModel item in model.edges)
+            foreach (MicroEdgeSerializeModel item in model.Edges)
                 MicroGraphProvider.GetRestoreTemplateImpl(item.GetType())?.Restore(operateData, item);
             owner.ShowNotification(new GUIContent("使用模板成功"), NOTIFICATION_TIME);
             void m_calculateCenter()
@@ -1318,12 +1322,12 @@ namespace MicroGraph.Editor
                 calcRect.yMax = float.MinValue;
                 calcRect.xMin = float.MaxValue;
                 calcRect.yMin = float.MaxValue;
-                foreach (var item in model.nodes)
-                    m_comparePos(item.pos);
-                foreach (var item in model.varNodes)
-                    m_comparePos(item.pos);
-                foreach (var item in model.stickys)
-                    m_comparePos(item.pos);
+                foreach (var item in model.Nodes)
+                    m_comparePos(item.Pos);
+                foreach (var item in model.VarNodes)
+                    m_comparePos(item.Pos);
+                foreach (var item in model.Stickys)
+                    m_comparePos(item.Pos);
             }
             void m_comparePos(Vector2 pos)
             {

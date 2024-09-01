@@ -37,15 +37,19 @@ namespace MicroGraph.Editor
         /// 通知时间
         /// </summary>
         public const float NOTIFICATION_TIME = 2F;
+        /// <summary>
+        /// 版本号
+        /// </summary>
+        public static string Versions => MicroGraphGlobalConfigModel.VERSIONS;
 
         /// <summary>
         /// 微图编辑器下的配置
         /// </summary>
-        private static MicroGraphConfigModel _allEditorConfig = null;
+        private static MicroGraphGlobalConfigModel _allEditorConfig = null;
         /// <summary>
         /// 微图编辑器下的配置
         /// </summary>
-        internal static MicroGraphConfigModel EditorConfig => _allEditorConfig;
+        internal static MicroGraphGlobalConfigModel EditorConfig => _allEditorConfig;
 
         private static Font _currentFont = null;
         /// <summary>
@@ -98,7 +102,7 @@ namespace MicroGraph.Editor
             string file = Path.Combine(CONFIG_PATH_ROOT, EDITOR_CONFIG_FILE);
             if (!File.Exists(file))
             {
-                _allEditorConfig = new MicroGraphConfigModel();
+                _allEditorConfig = new MicroGraphGlobalConfigModel();
                 SaveConfig();
             }
             else
@@ -106,19 +110,19 @@ namespace MicroGraph.Editor
                 string str = File.ReadAllText(file, Encoding.UTF8);
                 try
                 {
-                    _allEditorConfig = JsonUtility.FromJson<MicroGraphConfigModel>(str);
+                    _allEditorConfig = JsonUtility.FromJson<MicroGraphGlobalConfigModel>(str);
                 }
                 catch (Exception)
                 {
                     Debug.LogError("微图配置文件错误，正在还原配置文件...");
-                    _allEditorConfig = new MicroGraphConfigModel();
+                    _allEditorConfig = new MicroGraphGlobalConfigModel();
                     SaveConfig();
                     Debug.LogError("微图配置文件错误，配置文件还原完成");
                 }
             }
-            if (string.IsNullOrWhiteSpace(_allEditorConfig.savePath))
+            if (string.IsNullOrWhiteSpace(_allEditorConfig.SavePath))
             {
-                _allEditorConfig.savePath = Application.dataPath;
+                _allEditorConfig.SavePath = Application.dataPath;
             }
             _allEditorConfig.OverviewConfig.Initialize();
             RefreshFont();
@@ -131,7 +135,7 @@ namespace MicroGraph.Editor
     partial class MicroGraphUtils
     {
         /// <summary>
-        /// 获取一个时间距离标准时间的秒数
+        /// 打开一个微图
         /// </summary>
         /// <returns></returns>
         public static bool OpenMicroGraph(string assetPath)
@@ -148,7 +152,7 @@ namespace MicroGraph.Editor
             }
         }
         /// <summary>
-        /// 获取一个时间距离标准时间的秒数
+        /// 打开一个微图
         /// </summary>
         /// <returns></returns>
         public static bool OpenMicroGraph(BaseMicroGraph graph)
@@ -213,6 +217,11 @@ namespace MicroGraph.Editor
             s = (0.5f - 0.2f) * s + 0.2f;
             return Color.HSVToRGB(h, s, 1);
         }
+        /// <summary>
+        /// 获取一个随机颜色
+        /// </summary>
+        /// <returns></returns>
+        public static Color GetRandomColor() => MicroGraphUtils.GetColor(Guid.NewGuid().ToString());
     }
     //内部方法
     partial class MicroGraphUtils
@@ -271,8 +280,8 @@ namespace MicroGraph.Editor
             graph.name = file;
             graph.editorInfo.Title = file;
             graph.editorInfo.CreateTime = DateTime.Now;
-            graph.editorInfo.ShowGrid = MicroGraphUtils.EditorConfig.defaultOpenGrid;
-            graph.editorInfo.CanZoom = MicroGraphUtils.EditorConfig.defaultOpenZoom;
+            graph.editorInfo.ShowGrid = MicroGraphUtils.EditorConfig.DefaultOpenGrid;
+            graph.editorInfo.CanZoom = MicroGraphUtils.EditorConfig.DefaultOpenZoom;
             AssetDatabase.CreateAsset(graph, path);
             AssetDatabase.Refresh();
             return graph;
@@ -285,9 +294,9 @@ namespace MicroGraph.Editor
         /// <returns></returns>
         public static BaseMicroGraph CreateLogicGraph(GraphCategoryModel configData)
         {
-            if (!Directory.Exists(EditorConfig.savePath))
-                EditorConfig.savePath = Application.dataPath;
-            string path = EditorUtility.SaveFilePanel("创建逻辑图", EditorConfig.savePath, "MicroGraph", "asset");
+            if (!Directory.Exists(EditorConfig.SavePath))
+                EditorConfig.SavePath = Application.dataPath;
+            string path = EditorUtility.SaveFilePanel("创建逻辑图", EditorConfig.SavePath, "MicroGraph", "asset");
             if (string.IsNullOrEmpty(path))
             {
                 EditorUtility.DisplayDialog("错误", "路径为空", "确定");
@@ -299,8 +308,8 @@ namespace MicroGraph.Editor
                 return null;
             }
             path = FileUtil.GetProjectRelativePath(path);
-            if (EditorConfig.recordSavePath)
-                EditorConfig.savePath = Path.GetDirectoryName(path);
+            if (EditorConfig.RecordSavePath)
+                EditorConfig.SavePath = Path.GetDirectoryName(path);
             BaseMicroGraph graph = CreateLogicGraph(configData.GraphType, path);
             return graph;
         }
@@ -430,9 +439,9 @@ namespace MicroGraph.Editor
                 EditorUtility.UnloadUnusedAssetsImmediate();
                 _currentFont = null;
             }
-            if (!string.IsNullOrWhiteSpace(EditorConfig.editorFont) && File.Exists(EditorConfig.editorFont))
+            if (!string.IsNullOrWhiteSpace(EditorConfig.EditorFont) && File.Exists(EditorConfig.EditorFont))
             {
-                _currentFont = new Font(Path.GetFullPath(EditorConfig.editorFont));
+                _currentFont = new Font(Path.GetFullPath(EditorConfig.EditorFont));
                 if (_currentFont == null)
                 {
 #if UNITY_2022_1_OR_NEWER
@@ -444,7 +453,7 @@ namespace MicroGraph.Editor
             }
             else
             {
-                EditorConfig.editorFont = "";
+                EditorConfig.EditorFont = "";
 #if UNITY_2022_1_OR_NEWER
                 _currentFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 #else

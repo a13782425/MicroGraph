@@ -19,6 +19,7 @@ namespace MicroGraph.Editor
         private List<OverviewGroupView> _groups = new List<OverviewGroupView>();
         private List<OverviewFavoriteGroupView> _favoriteGroups = new List<OverviewFavoriteGroupView>();
         private OverviewCreateGraphWindow _createGraphWindow;
+        private OverviewSearchView _searchView;
         internal MicroGraphWindow owner { get; private set; }
         private bool _showGrid = false;
         /// <summary>
@@ -127,7 +128,6 @@ namespace MicroGraph.Editor
             CanZoom = MicroGraphUtils.EditorConfig.OverviewConfig.CanZoom;
             this.viewTransformChanged += m_viewTransformChanged;
             this.graphViewChanged += m_graphViewChanged;
-            this.RegisterCallback<KeyUpEvent>(m_onKeyUp);
             this.RegisterCallback<KeyDownEvent>(onKeyDownEvent);
             //this.RegisterCallback<GeometryChangedEvent>(onGeometryChanged);
             float scale = MicroGraphUtils.EditorConfig.OverviewConfig.Scale;
@@ -149,11 +149,61 @@ namespace MicroGraph.Editor
 
         private void onKeyDownEvent(KeyDownEvent evt)
         {
-            if (evt.ctrlKey && evt.keyCode == KeyCode.S)
+            switch (evt.keyCode)
             {
-                MicroGraphUtils.SaveConfig();
-                owner.ShowNotification(new GUIContent("保存配置文件成功"), 2);
-                evt.StopPropagation();
+                case KeyCode.Escape:
+                    this.ClearSelection();
+                    evt.StopPropagation();
+                    break;
+                case KeyCode.Delete:
+                    List<OverviewNodeView> tempList = this.selection.OfType<OverviewNodeView>().ToList();
+                    bool needRefresh = false;
+                    foreach (var item in tempList)
+                    {
+                        if (item.FavoriteGroup == null)
+                        {
+                            if (EditorUtility.DisplayDialog("警告", $"正在删除 {MicroGraphProvider.GetGraphCategory(item.SummaryModel).GraphName}: {item.SummaryModel.MicroName} ", "确定", "取消"))
+                            {
+                                MicroGraphUtils.RemoveGraph(item.SummaryModel.AssetPath);
+                                needRefresh = true;
+                            }
+                        }
+                        else
+                        {
+                            if (item.FavoriteGroup.Graphs.Contains(item.SummaryModel.OnlyId))
+                            {
+                                item.FavoriteGroup.Graphs.Remove(item.SummaryModel.OnlyId);
+                                needRefresh = true;
+                            }
+                        }
+                    }
+                    if (needRefresh)
+                    {
+                        MicroGraphUtils.SaveConfig();
+                        MicroGraphEventListener.OnEventAll(MicroGraphEventIds.OVERVIEW_CHANGED);
+                    }
+                    evt.StopPropagation();
+                    break;
+                case KeyCode.S:
+                    if (evt.ctrlKey)
+                    {
+                        MicroGraphUtils.SaveConfig();
+                        owner.ShowNotification(new GUIContent("保存配置文件成功"), 2);
+                        evt.StopPropagation();
+                    }
+                    break;
+                case KeyCode.F:
+                    if (evt.ctrlKey)
+                    {
+                        if (_searchView == null)
+                        {
+                            _searchView = new OverviewSearchView(this);
+                            Add(_searchView);
+                        }
+                        _searchView.Search();
+                        evt.StopPropagation();
+                    }
+                    break;
             }
         }
 
@@ -230,46 +280,6 @@ namespace MicroGraph.Editor
             return true;
         }
 
-        private void m_onKeyUp(KeyUpEvent evt)
-        {
-            switch (evt.keyCode)
-            {
-                case KeyCode.Escape:
-                    this.ClearSelection();
-                    evt.StopPropagation();
-                    break;
-                case KeyCode.Delete:
-                    List<OverviewNodeView> tempList = this.selection.OfType<OverviewNodeView>().ToList();
-                    bool needRefresh = false;
-                    foreach (var item in tempList)
-                    {
-                        if (item.FavoriteGroup == null)
-                        {
-                            if (EditorUtility.DisplayDialog("警告", $"正在删除 {MicroGraphProvider.GetGraphCategory(item.SummaryModel).GraphName}: {item.SummaryModel.MicroName} ", "确定", "取消"))
-                            {
-                                MicroGraphUtils.RemoveGraph(item.SummaryModel.AssetPath);
-                                needRefresh = true;
-                            }
-                        }
-                        else
-                        {
-                            if (item.FavoriteGroup.graphs.Contains(item.SummaryModel.OnlyId))
-                            {
-                                item.FavoriteGroup.graphs.Remove(item.SummaryModel.OnlyId);
-                                needRefresh = true;
-                            }
-                        }
-                    }
-                    if (needRefresh)
-                    {
-                        MicroGraphUtils.SaveConfig();
-                        MicroGraphEventListener.OnEventAll(MicroGraphEventIds.OVERVIEW_CHANGED);
-                    }
-                    evt.StopPropagation();
-                    break;
-            }
-        }
-
         /// <summary>
         /// 添加分组
         /// </summary>
@@ -344,10 +354,10 @@ namespace MicroGraph.Editor
             var windowMousePosition = owner.rootVisualElement.ChangeCoordinatesTo(owner.rootVisualElement.parent, screenPos - owner.position.position);
             var groupPos = this.contentViewContainer.WorldToLocal(windowMousePosition);
             OverviewFavoriteGroupInfo overviewFavoriteGroupInfo = new OverviewFavoriteGroupInfo();
-            overviewFavoriteGroupInfo.favoriteName = "收藏";
-            overviewFavoriteGroupInfo.pos = groupPos;
-            overviewFavoriteGroupInfo.columnCount = 0;
-            overviewFavoriteGroupInfo.color = MicroGraphUtils.GetColor(Guid.NewGuid().ToString());
+            overviewFavoriteGroupInfo.FavoriteName = "收藏";
+            overviewFavoriteGroupInfo.Pos = groupPos;
+            overviewFavoriteGroupInfo.ColumnCount = 0;
+            overviewFavoriteGroupInfo.Color = MicroGraphUtils.GetRandomColor();
             MicroGraphUtils.EditorConfig.OverviewConfig.FavoriteGroupInfos.Add(overviewFavoriteGroupInfo);
             MicroGraphUtils.SaveConfig();
             var group = new OverviewFavoriteGroupView(this);

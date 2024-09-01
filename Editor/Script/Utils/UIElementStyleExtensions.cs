@@ -356,70 +356,70 @@ namespace MicroGraph.Editor
             style.fontSize = value;
             return style;
         }
-
+        private const int REM = 16;
         public static IStyle TextXs(this IStyle style)
         {
-            return style.Text(0.75f.Rem());
+            return style.Text(0.75f * REM);
         }
 
         public static IStyle TextSm(this IStyle style)
         {
-            return style.Text(0.875f.Rem());
+            return style.Text(0.875f * REM);
         }
 
         public static IStyle TextBase(this IStyle style)
         {
-            return style.Text(1f.Rem());
+            return style.Text(1f * REM);
         }
 
         public static IStyle TextLg(this IStyle style)
         {
-            return style.Text(1.125f.Rem());
+            return style.Text(1.125f * REM);
         }
 
         public static IStyle TextXl(this IStyle style)
         {
-            return style.Text(1.25f.Rem());
+            return style.Text(1.25f * REM);
         }
 
         public static IStyle Text2Xl(this IStyle style)
         {
-            return style.Text(1.5f.Rem());
+            return style.Text(1.5f * REM);
         }
 
         public static IStyle Text3Xl(this IStyle style)
         {
-            return style.Text(1.875f.Rem());
+            return style.Text(1.875f * REM);
         }
 
         public static IStyle Text4Xl(this IStyle style)
         {
-            return style.Text(2.25f.Rem());
+            return style.Text(2.25f * REM);
         }
 
         public static IStyle Text5Xl(this IStyle style)
         {
-            return style.Text(3f.Rem());
+            return style.Text(3f * REM);
         }
 
         public static IStyle Text6Xl(this IStyle style)
         {
-            return style.Text(3.75f.Rem());
+            return style.Text(3.75f * REM);
         }
 
         public static IStyle Text7Xl(this IStyle style)
         {
-            return style.Text(4.5f.Rem());
+            return style.Text(4.5f * REM);
         }
 
         public static IStyle Text8Xl(this IStyle style)
         {
-            return style.Text(6f.Rem());
+            return style.Text(6f * REM);
         }
 
         public static IStyle Text9Xl(this IStyle style)
         {
-            return style.Text(8f.Rem());
+            return style.Text(8f * REM);
         }
 
         #endregion

@@ -205,7 +205,7 @@ namespace MicroGraph.Editor
                 //明亮主题
                 contentContainer.AddStyleSheet("Uss/LightTheme");
             }
-            contentContainer.AddStyleSheet("Uss/Tailwind");
+            //contentContainer.AddStyleSheet("Uss/Tailwind");
             contentContainer.AddStyleSheet("Uss/MicroGraphWindow");
             /*
              __________________________________
@@ -339,7 +339,7 @@ namespace MicroGraph.Editor
             {
                 switch (str)
                 {
-                    case nameof(MicroGraphUtils.EditorConfig.editorFont):
+                    case nameof(MicroGraphUtils.EditorConfig.EditorFont):
                         m_onEditorFontChanged(null);
                         break;
                     default:

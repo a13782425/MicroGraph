@@ -14,24 +14,24 @@ namespace MicroGraph.Editor
         {
             BaseMicroNodeView.InternalNodeView nodeView = target as BaseMicroNodeView.InternalNodeView;
             MicroNodeSerializeModel nodeModel = new MicroNodeSerializeModel();
-            nodeModel.nodeId = nodeView.nodeView.Target.OnlyId;
-            nodeModel.className = nodeView.nodeView.Target.GetType().FullName;
-            nodeModel.pos = nodeView.GetPosition().position;
-            model.nodes.Add(nodeModel);
+            nodeModel.NodeId = nodeView.nodeView.Target.OnlyId;
+            nodeModel.ClassName = nodeView.nodeView.Target.GetType().FullName;
+            nodeModel.Pos = nodeView.GetPosition().position;
+            model.Nodes.Add(nodeModel);
         }
 
         public void Restore(MicroTemplateOperateData operateData, object data)
         {
             MicroNodeSerializeModel model = data as MicroNodeSerializeModel;
-            var nodeCategory = operateData.view.CategoryModel.GetNodeCategory(model.className);
-            bool isUnique = operateData.view.CategoryModel.IsUniqueNode(model.className);
+            var nodeCategory = operateData.view.CategoryModel.GetNodeCategory(model.ClassName);
+            bool isUnique = operateData.view.CategoryModel.IsUniqueNode(model.ClassName);
             if (isUnique)
             {
                 var uniqueNode = operateData.view.Target.Nodes.FirstOrDefault(a => a.GetType() == nodeCategory.NodeClassType);
                 if (uniqueNode != null)
                 {
                     operateData.view.owner.ShowNotification(new GUIContent("唯一节点不允许重复创建"), 2f);
-                    operateData.oldMappingNewIdDic[model.nodeId] = uniqueNode.OnlyId;
+                    operateData.oldMappingNewIdDic[model.NodeId] = uniqueNode.OnlyId;
                     return;
                 }
             }
@@ -40,9 +40,9 @@ namespace MicroGraph.Editor
                 operateData.view.owner.ShowNotification(new GUIContent($"节点:{nodeCategory.NodeName} 已不再使用"), 2f);
                 return;
             }
-            Vector2 offset = operateData.centerPos - model.pos;
+            Vector2 offset = operateData.centerPos - model.Pos;
             var node = operateData.view.AddNode(nodeCategory.NodeClassType, operateData.mousePos - offset);
-            operateData.oldMappingNewIdDic[model.nodeId] = node.OnlyId;
+            operateData.oldMappingNewIdDic[model.NodeId] = node.OnlyId;
             return;
         }
     }
@@ -56,22 +56,22 @@ namespace MicroGraph.Editor
         {
             MicroVariableEditorInfo editorInfo = target as MicroVariableEditorInfo;
             MicroVarSerializeModel varModel = new MicroVarSerializeModel();
-            varModel.varClassName = editorInfo.Target.GetValueType().FullName;
-            varModel.varName = editorInfo.Target.Name;
-            varModel.canRename = editorInfo.CanRename;
-            varModel.canDelete = editorInfo.CanDelete;
-            varModel.canDefaultValue = editorInfo.CanDefaultValue;
-            varModel.canAssign = editorInfo.CanAssign;
-            model.vars.Add(varModel);
+            varModel.VarClassName = editorInfo.Target.GetValueType().FullName;
+            varModel.VarName = editorInfo.Target.Name;
+            varModel.CanRename = editorInfo.CanRename;
+            varModel.CanDelete = editorInfo.CanDelete;
+            varModel.CanDefaultValue = editorInfo.CanDefaultValue;
+            varModel.CanAssign = editorInfo.CanAssign;
+            model.Vars.Add(varModel);
         }
 
         public void Restore(MicroTemplateOperateData operateData, object data)
         {
             MicroVarSerializeModel model = data as MicroVarSerializeModel;
-            var varCategory = operateData.view.CategoryModel.VariableCategories.FirstOrDefault(a => a.VarType.FullName == model.varClassName);
+            var varCategory = operateData.view.CategoryModel.VariableCategories.FirstOrDefault(a => a.VarType.FullName == model.VarClassName);
             if (varCategory == null)
                 return;
-            operateData.view.AddVariable(model.varName, varCategory.VarType, model.canDelete, model.canRename, model.canDefaultValue, model.canAssign);
+            operateData.view.AddVariable(model.VarName, varCategory.VarType, model.CanDelete, model.CanRename, model.CanDefaultValue, model.CanAssign);
         }
     }
     /// <summary>
@@ -83,21 +83,21 @@ namespace MicroGraph.Editor
         {
             MicroVariableNodeView.InternalNodeView varNodeView = target as MicroVariableNodeView.InternalNodeView;
             MicroVarNodeSerializeModel varNodeModel = new MicroVarNodeSerializeModel();
-            varNodeModel.nodeId = varNodeView.nodeView.editorInfo.NodeId;
-            varNodeModel.varName = varNodeView.nodeView.Target.Name;
-            varNodeModel.pos = varNodeView.nodeView.LastPos;
-            model.varNodes.Add(varNodeModel);
+            varNodeModel.NodeId = varNodeView.nodeView.editorInfo.NodeId;
+            varNodeModel.VarName = varNodeView.nodeView.Target.Name;
+            varNodeModel.Pos = varNodeView.nodeView.LastPos;
+            model.VarNodes.Add(varNodeModel);
         }
 
         public void Restore(MicroTemplateOperateData operateData, object data)
         {
             MicroVarNodeSerializeModel model = data as MicroVarNodeSerializeModel;
-            BaseMicroVariable variable = operateData.view.Target.Variables.FirstOrDefault(a => a.Name == model.varName);
+            BaseMicroVariable variable = operateData.view.Target.Variables.FirstOrDefault(a => a.Name == model.VarName);
             if (variable == null)
                 return;
-            Vector2 offset = operateData.centerPos - model.pos;
+            Vector2 offset = operateData.centerPos - model.Pos;
             MicroVariableNodeView varNodeView = operateData.view.AddVariableNodeView(variable, operateData.mousePos - offset);
-            operateData.oldMappingNewIdDic[model.nodeId] = varNodeView.editorInfo.NodeId;
+            operateData.oldMappingNewIdDic[model.NodeId] = varNodeView.editorInfo.NodeId;
         }
     }
     /// <summary>
@@ -109,27 +109,27 @@ namespace MicroGraph.Editor
         {
             MicroStickyNoteView node = (MicroStickyNoteView)target;
             MicroStickySerializeModel stickyModel = new MicroStickySerializeModel();
-            stickyModel.theme = node.editorInfo.Theme;
-            stickyModel.pos = node.GetPosition().position;
-            stickyModel.size = node.GetPosition().size;
-            stickyModel.fontSize = node.editorInfo.FontSize;
-            stickyModel.fontStyle = node.editorInfo.FontStyle;
-            stickyModel.content = node.editorInfo.Content;
-            model.stickys.Add(stickyModel);
+            stickyModel.Theme = node.editorInfo.Theme;
+            stickyModel.Pos = node.GetPosition().position;
+            stickyModel.Size = node.GetPosition().size;
+            stickyModel.FontSize = node.editorInfo.FontSize;
+            stickyModel.FontStyle = node.editorInfo.FontStyle;
+            stickyModel.Content = node.editorInfo.Content;
+            model.Stickys.Add(stickyModel);
         }
 
         public void Restore(MicroTemplateOperateData operateData, object data)
         {
             MicroStickySerializeModel model = data as MicroStickySerializeModel;
-            Vector2 offset = operateData.centerPos - model.pos;
+            Vector2 offset = operateData.centerPos - model.Pos;
             MicroStickyEditorInfo sticky = new MicroStickyEditorInfo();
             sticky.NodeId = operateData.view.editorInfo.GetUniqueId();
             sticky.Pos = operateData.mousePos - offset;
-            sticky.Theme = model.theme;
-            sticky.FontSize = model.fontSize;
-            sticky.FontStyle = model.fontStyle;
-            sticky.Size = model.size;
-            sticky.Content = model.content;
+            sticky.Theme = model.Theme;
+            sticky.FontSize = model.FontSize;
+            sticky.FontStyle = model.FontStyle;
+            sticky.Size = model.Size;
+            sticky.Content = model.Content;
             operateData.view.AddStickyNodeView(sticky);
         }
     }
@@ -144,40 +144,40 @@ namespace MicroGraph.Editor
             MicroEdgeSerializeModel edgeModel = new MicroEdgeSerializeModel();
             MicroPort.InternalPort inPort = edgeView.input as MicroPort.InternalPort;
             MicroPort.InternalPort outPort = edgeView.output as MicroPort.InternalPort;
-            edgeModel.inKey = inPort.microPort.key;
-            edgeModel.outKey = outPort.microPort.key;
+            edgeModel.InKey = inPort.microPort.key;
+            edgeModel.OutKey = outPort.microPort.key;
             if (edgeView.input.node is BaseMicroNodeView.InternalNodeView inNodeView)
-                edgeModel.inNodeId = inNodeView.nodeView.editorInfo.NodeId;
+                edgeModel.InNodeId = inNodeView.nodeView.editorInfo.NodeId;
             else if (edgeView.input.node is MicroVariableNodeView.InternalNodeView inVarView)
-                edgeModel.inNodeId = inVarView.nodeView.editorInfo.NodeId;
+                edgeModel.InNodeId = inVarView.nodeView.editorInfo.NodeId;
 
             if (edgeView.output.node is BaseMicroNodeView.InternalNodeView outNodeView)
-                edgeModel.outNodeId = outNodeView.nodeView.editorInfo.NodeId;
+                edgeModel.OutNodeId = outNodeView.nodeView.editorInfo.NodeId;
             else if (edgeView.output.node is MicroVariableNodeView.InternalNodeView outVarView)
-                edgeModel.outNodeId = outVarView.nodeView.editorInfo.NodeId;
-            model.edges.Add(edgeModel);
+                edgeModel.OutNodeId = outVarView.nodeView.editorInfo.NodeId;
+            model.Edges.Add(edgeModel);
         }
 
         public void Restore(MicroTemplateOperateData operateData, object data)
         {
             MicroEdgeSerializeModel model = data as MicroEdgeSerializeModel;
-            if (!operateData.oldMappingNewIdDic.TryGetValue(model.inNodeId, out int newInId))
+            if (!operateData.oldMappingNewIdDic.TryGetValue(model.InNodeId, out int newInId))
                 return;
             var inNodeView = operateData.view.GetElement<Node>(newInId);
             if (inNodeView == null)
                 return;
-            if (!operateData.oldMappingNewIdDic.TryGetValue(model.outNodeId, out int newOutId))
+            if (!operateData.oldMappingNewIdDic.TryGetValue(model.OutNodeId, out int newOutId))
                 return;
             var outNodeView = operateData.view.GetElement<Node>(newOutId);
             if (outNodeView == null)
                 return;
             MicroPort inPort = default, outPort = default;
             if (inNodeView is BaseMicroNodeView.InternalNodeView inTempNodeView)
-                inPort = inTempNodeView.nodeView.GetMicroPort(model.inKey, true);
+                inPort = inTempNodeView.nodeView.GetMicroPort(model.InKey, true);
             else if (inNodeView is MicroVariableNodeView.InternalNodeView inVarView)
                 inPort = inVarView.nodeView.Input;
             if (outNodeView is BaseMicroNodeView.InternalNodeView outTempNodeView)
-                outPort = outTempNodeView.nodeView.GetMicroPort(model.outKey, false);
+                outPort = outTempNodeView.nodeView.GetMicroPort(model.OutKey, false);
             else if (outNodeView is MicroVariableNodeView.InternalNodeView inVarView)
                 outPort = inVarView.nodeView.OutPut;
 
@@ -213,24 +213,24 @@ namespace MicroGraph.Editor
         {
             MicroGroupView groupView = target as MicroGroupView;
             MicroGroupSerializeModel groupModel = new MicroGroupSerializeModel();
-            groupModel.title = groupView.editorInfo.Title;
-            groupModel.nodeIds.AddRange(groupView.editorInfo.Nodes);
-            groupModel.color = groupView.editorInfo.GroupColor;
-            groupModel.pos = groupView.editorInfo.Pos;
-            model.groups.Add(groupModel);
+            groupModel.Title = groupView.editorInfo.Title;
+            groupModel.NodeIds.AddRange(groupView.editorInfo.Nodes);
+            groupModel.Color = groupView.editorInfo.GroupColor;
+            groupModel.Pos = groupView.editorInfo.Pos;
+            model.Groups.Add(groupModel);
         }
 
         public void Restore(MicroTemplateOperateData operateData, object data)
         {
             MicroGroupSerializeModel model = data as MicroGroupSerializeModel;
-            Vector2 offset = operateData.centerPos - model.pos;
+            Vector2 offset = operateData.centerPos - model.Pos;
             MicroGroupEditorInfo group = new MicroGroupEditorInfo();
             group.GroupId = operateData.view.editorInfo.GetUniqueId();
             group.Pos = operateData.mousePos - offset;
-            group.Title = model.title;
-            group.GroupColor = model.color;
+            group.Title = model.Title;
+            group.GroupColor = model.Color;
             MicroGroupView groupView = operateData.view.AddGroupView(group);
-            foreach (int id in model.nodeIds)
+            foreach (int id in model.NodeIds)
             {
                 if (!operateData.oldMappingNewIdDic.TryGetValue(id, out int newId))
                     continue;

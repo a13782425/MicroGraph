@@ -102,7 +102,7 @@ namespace MicroGraph.Editor
         }
         private void m_onRename(string arg1, string arg2)
         {
-            if (!MicroGraphUtils.TitleValidity(arg2, MicroGraphUtils.EditorConfig.graphTitleLength))
+            if (!MicroGraphUtils.TitleValidity(arg2, MicroGraphUtils.EditorConfig.GraphTitleLength))
             {
                 owner.owner.ShowNotification(new GUIContent("标题不合法"), NOTIFICATION_TIME);
                 title = arg1;
@@ -156,7 +156,7 @@ namespace MicroGraph.Editor
                 evt.menu.AppendSeparator();
                 foreach (var item in MicroGraphUtils.EditorConfig.OverviewConfig.FavoriteGroupInfos)
                 {
-                    evt.menu.AppendAction($"添加收藏/{item.favoriteName}", m_addFavoriteGroup, DropdownMenuAction.AlwaysEnabled, item);
+                    evt.menu.AppendAction($"添加收藏/{item.FavoriteName}", m_addFavoriteGroup, DropdownMenuAction.AlwaysEnabled, item);
                 }
                 evt.menu.AppendSeparator();
                 evt.menu.AppendAction("删除", m_removeGraph, DropdownMenuAction.AlwaysEnabled);
@@ -171,21 +171,21 @@ namespace MicroGraph.Editor
         private void m_addFavoriteGroup(DropdownMenuAction action)
         {
             OverviewFavoriteGroupInfo info = action.userData as OverviewFavoriteGroupInfo;
-            if (info.graphs.Contains(this.SummaryModel.OnlyId))
+            if (info.Graphs.Contains(this.SummaryModel.OnlyId))
             {
-                owner.owner.ShowNotification(new GUIContent($"收藏夹:『{info.favoriteName}』中已存在 {SummaryModel.MicroName}"), NOTIFICATION_TIME);
+                owner.owner.ShowNotification(new GUIContent($"收藏夹:『{info.FavoriteName}』中已存在 {SummaryModel.MicroName}"), NOTIFICATION_TIME);
                 return;
             }
-            info.graphs.Add(this.SummaryModel.OnlyId);
+            info.Graphs.Add(this.SummaryModel.OnlyId);
             MicroGraphUtils.SaveConfig();
             MicroGraphEventListener.OnEventAll(MicroGraphEventIds.OVERVIEW_CHANGED);
         }
 
         private void m_removeFavoriteGraph(DropdownMenuAction action)
         {
-            if (_favoriteGroup.graphs.Contains(this.SummaryModel.OnlyId))
+            if (_favoriteGroup.Graphs.Contains(this.SummaryModel.OnlyId))
             {
-                _favoriteGroup.graphs.Remove(this.SummaryModel.OnlyId);
+                _favoriteGroup.Graphs.Remove(this.SummaryModel.OnlyId);
             }
             MicroGraphUtils.SaveConfig();
             MicroGraphEventListener.OnEventAll(MicroGraphEventIds.OVERVIEW_CHANGED);

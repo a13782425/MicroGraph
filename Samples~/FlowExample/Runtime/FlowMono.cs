@@ -1,5 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
+using MicroGraph.Runtime;
+using System.Linq;
 using UnityEngine;
 namespace MicroGraph.FlowExample.Runtime
 {
@@ -7,18 +7,18 @@ namespace MicroGraph.FlowExample.Runtime
     {
         public FlowGraph Graph;
 
-        private FlowRuntime runtime;
+        private MicroGraphRuntime runtime;
 
         void Start()
         {
             if (Graph == null)
                 return;
-            runtime = new FlowRuntime(Graph);
-            runtime.PlayGraph();
+            runtime = new MicroGraphRuntime(Graph);
+            runtime.Play(Graph.Nodes.FirstOrDefault(a => a.GetType() == typeof(FlowStartNode)).OnlyId);
         }
         private void Update()
         {
-            runtime?.UpdateGraph(Time.deltaTime, Time.unscaledDeltaTime);
+            runtime?.Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
     }
 }

@@ -1,9 +1,5 @@
-﻿using MicroGraph.Runtime;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MicroGraph.Editor
@@ -14,10 +10,10 @@ namespace MicroGraph.Editor
     [Serializable]
     public class MicroNodeSerializeModel
     {
-        public int nodeId;
-        public string className;
+        public int NodeId;
+        public string ClassName;
         [SerializeField]
-        public Vector2 pos = Vector2.zero;
+        public Vector2 Pos = Vector2.zero;
     }
     /// <summary>
     /// 微图变量序列化
@@ -25,22 +21,22 @@ namespace MicroGraph.Editor
     [Serializable]
     public class MicroVarSerializeModel
     {
-        public string varName;
-        public string varClassName;
+        public string VarName;
+        public string VarClassName;
         [SerializeField]
-        public bool canRename = true;
+        public bool CanRename = true;
         [SerializeField]
-        public bool canDelete = true;
+        public bool CanDelete = true;
         /// <summary>
         /// 可以有默认值
         /// </summary>
         [SerializeField]
-        public bool canDefaultValue = true;
+        public bool CanDefaultValue = true;
         /// <summary>
         /// 可以被赋值
         /// </summary>
         [SerializeField]
-        public bool canAssign = true;
+        public bool CanAssign = true;
     }
     /// <summary>
     /// 微图变量节点序列化
@@ -48,10 +44,10 @@ namespace MicroGraph.Editor
     [Serializable]
     public class MicroVarNodeSerializeModel
     {
-        public int nodeId;
-        public string varName;
+        public int NodeId;
+        public string VarName;
         [SerializeField]
-        public Vector2 pos = Vector2.zero;
+        public Vector2 Pos = Vector2.zero;
     }
     /// <summary>
     /// 微图连线序列化
@@ -59,10 +55,10 @@ namespace MicroGraph.Editor
     [Serializable]
     public class MicroEdgeSerializeModel
     {
-        public int inNodeId;
-        public int outNodeId;
-        public string inKey;
-        public string outKey;
+        public int InNodeId;
+        public int OutNodeId;
+        public string InKey;
+        public string OutKey;
     }
     /// <summary>
     /// 微图分组序列化
@@ -71,13 +67,13 @@ namespace MicroGraph.Editor
     public class MicroGroupSerializeModel
     {
         [SerializeField]
-        public Vector2 pos = default;
+        public Vector2 Pos = default;
         [SerializeField]
-        public Color color = default;
+        public Color Color = default;
         [SerializeField]
-        public string title = default;
+        public string Title = default;
         [SerializeField]
-        public List<int> nodeIds = new List<int>();
+        public List<int> NodeIds = new List<int>();
     }
 
     /// <summary>
@@ -87,16 +83,16 @@ namespace MicroGraph.Editor
     public class MicroStickySerializeModel
     {
         [SerializeField]
-        public string content;
+        public string Content;
         [SerializeField]
-        public int theme;
+        public int Theme;
         [SerializeField]
-        public int fontStyle;
+        public int FontStyle;
         [SerializeField]
-        public int fontSize;
+        public int FontSize;
         [SerializeField]
-        public Vector2 pos = Vector2.zero;
+        public Vector2 Pos = Vector2.zero;
         [SerializeField]
-        public Vector2 size = Vector2.zero;
+        public Vector2 Size = Vector2.zero;
     }
 }

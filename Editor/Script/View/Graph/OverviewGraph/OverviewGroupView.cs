@@ -64,23 +64,23 @@ namespace MicroGraph.Editor
                 owner.AddElement(node);
                 this.AddElement(node);
             }
-            groupInfo = MicroGraphUtils.EditorConfig.OverviewConfig.GroupInfos.FirstOrDefault(a => a.groupKey == categoryModel.GraphType.FullName);
+            groupInfo = MicroGraphUtils.EditorConfig.OverviewConfig.GroupInfos.FirstOrDefault(a => a.GroupKey == categoryModel.GraphType.FullName);
             if (groupInfo == null)
             {
                 groupInfo = new OverviewGroupInfo();
-                groupInfo.groupKey = categoryModel.GraphType.FullName;
-                groupInfo.pos = new Vector2(-12, -48 + 200 * _category.Index);
+                groupInfo.GroupKey = categoryModel.GraphType.FullName;
+                groupInfo.Pos = new Vector2(-12, -48 + 200 * _category.Index);
                 MicroGraphUtils.EditorConfig.OverviewConfig.GroupInfos.Add(groupInfo);
                 MicroGraphUtils.SaveConfig();
             }
-            _columnField.value = groupInfo.columnCount;
+            _columnField.value = groupInfo.ColumnCount;
             _columnField.RegisterValueChangedCallback(a =>
             {
-                groupInfo.columnCount = a.newValue;
+                groupInfo.ColumnCount = a.newValue;
                 MicroGraphUtils.SaveConfig();
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.OVERVIEW_CHANGED);
             });
-            this.SetPosition(new Rect(groupInfo.pos, Vector2.one));
+            this.SetPosition(new Rect(groupInfo.Pos, Vector2.one));
             this.RegisterCallback<GeometryChangedEvent>(onGeometryChanged);
             //();
         }
@@ -110,7 +110,7 @@ namespace MicroGraph.Editor
         /// <param name="eventArgs"></param>
         internal void Refresh()
         {
-            this._columnField.SetValueWithoutNotify(groupInfo.columnCount);
+            this._columnField.SetValueWithoutNotify(groupInfo.ColumnCount);
 
             var nodeViewList = this.containedElements.OfType<OverviewNodeView>().ToList();
             foreach (var item in nodeViewList)
@@ -164,17 +164,17 @@ namespace MicroGraph.Editor
         public override void SetPosition(Rect newPos)
         {
             base.SetPosition(newPos);
-            groupInfo.pos = newPos.position;
+            groupInfo.Pos = newPos.position;
         }
 
         internal void ResetElementPosition()
         {
-            Vector2 startPosition = groupInfo.pos + new Vector2(24f, 47f);
+            Vector2 startPosition = groupInfo.Pos + new Vector2(24f, 47f);
 
             var nodeViews = this.containedElements.OfType<OverviewNodeView>().ToList();
             nodeViews.Sort((a, b) => b.SummaryModel.ModifyTime.CompareTo(a.SummaryModel.ModifyTime));
 
-            bool isSingleRow = groupInfo.columnCount <= 0;
+            bool isSingleRow = groupInfo.ColumnCount <= 0;
             float horizontalOffset = 0; // 用于横向累加元素位置
 
             if (isSingleRow)
@@ -190,7 +190,7 @@ namespace MicroGraph.Editor
             else
             {
                 // 多列布局
-                int columnCount = groupInfo.columnCount;
+                int columnCount = groupInfo.ColumnCount;
                 float[] columnWidths = new float[columnCount]; // 记录每列宽度
                 float[] columnHeights = new float[columnCount]; // 记录每列高度
                 for (int i = 0; i < nodeViews.Count; i++)

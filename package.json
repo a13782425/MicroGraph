@@ -1,22 +1,23 @@
 {
   "name": "com.timeslip.micrograph",
   "displayName": "MicroGraph",
-  "version": "0.1.0-pre.27",
+  "version": "0.1.0-pre.30",
   "unity": "2021.3",
   "description": "\u5fae\u56fe\uff0c\u7b80\u5355\u7684\u53ef\u89c6\u5316\u7f16\u7a0b\u5de5\u5177",
+  "documentationUrl": "http://blog.timeslip.cn/archives/micrograph-shi-yong-wen-dang",
   "author": {
     "name": "timeslip"
   },
   "changelogUrl": "http://blog.timeslip.cn/archives/micrograph-geng-xin-ri-zhi",
   "samples": [
     {
-      "displayName": "流程示例",
-      "description": "简单的流程示例",
+      "displayName": "FlowExample",
+      "description": "\u7b80\u5355\u7684\u6d41\u7a0b\u793a\u4f8b",
       "path": "Samples~/FlowExample"
     },
-	{
-      "displayName": "Mono示例",
-      "description": "基于Mono的微图",
+    {
+      "displayName": "MonoExample",
+      "description": "\u57fa\u4e8eMono\u7684\u5fae\u56fe",
       "path": "Samples~/MonoExample"
     }
   ]

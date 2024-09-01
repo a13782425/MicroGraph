@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using PopupWindow = UnityEditor.PopupWindow;
+using UnityPopupWindow = UnityEditor.PopupWindow;
 
 namespace MicroGraph.Editor
 {
@@ -61,9 +61,9 @@ namespace MicroGraph.Editor
             Items.Add(new Item
             {
                 itemType = ItemType.Item,
-                displayName = value.displayName,
-                categoryName = value.categoryName,
-                value = value.value
+                value = value.value,
+                displayName = string.IsNullOrWhiteSpace(value.displayName) ? value.value : string.Empty,
+                categoryName = string.IsNullOrWhiteSpace(value.categoryName) ? value.value : string.Empty
             });
         }
 
@@ -163,8 +163,9 @@ namespace MicroGraph.Editor
                 m_Items.Clear();
                 m_Items.AddRange(items);
 
-                m_Size = new Vector2(rect.width, 225);
-                PopupWindow.Show(rect, this);
+                m_Size = new Vector2(rect.width, 22 * m_Items.Count + 36);
+                m_Size.y = Mathf.Min(240, m_Size.y);
+                UnityPopupWindow.Show(rect, this);
             }
 
             public override void OnOpen()
@@ -174,7 +175,6 @@ namespace MicroGraph.Editor
 
                 editorWindow.rootVisualElement.AddToClassList(k_BaseClass);
                 editorWindow.rootVisualElement.AddManipulator(m_NavigationManipulator = new KeyboardNavigationManipulator(Apply));
-
                 var searchField = new ToolbarSearchField();
                 searchField.AddToClassList(k_SearchField);
                 searchField.RegisterCallback<AttachToPanelEvent>(evt =>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 
@@ -62,10 +61,10 @@ namespace MicroGraph.Editor
             NodeControlView = new MicroNodeControlSubView(_owner);
             TemplateControlSubView = new MicroTemplateControlSubView(_owner);
 
-            _tabVarButton = new TabButton("变量控制", VariableControlView);
-            _tabTemplateButton = new TabButton("微图模板", TemplateControlSubView);
-            _tabNodeButton = new TabButton("节点控制", NodeControlView);
-            _tabGraphButton = new TabButton("微图控制", GraphControlView);
+            _tabVarButton = new TabButton("变量信息", VariableControlView);
+            _tabTemplateButton = new TabButton("模板信息", TemplateControlSubView);
+            _tabNodeButton = new TabButton("节点信息", NodeControlView);
+            _tabGraphButton = new TabButton("微图信息", GraphControlView);
 
             _tabVarButton.OnSelect += m_tabbutton_OnSelect;
             _tabVarButton.OnClose += m_tabbutton_OnClose;

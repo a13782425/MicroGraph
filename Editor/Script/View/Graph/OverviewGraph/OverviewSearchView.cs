@@ -10,19 +10,19 @@ namespace MicroGraph.Editor
     /// <summary>
     /// 搜索界面
     /// </summary>
-    internal class MicroSearchView : GraphElement
+    internal class OverviewSearchView : GraphElement
     {
         private const string STYLE_PATH = "Uss/MicroGraph/MicroSearchView";
-        private BaseMicroGraphView _owner;
+        private OverviewGraphView _owner;
         private Button _closeBtn;
         private TextField _searchField;
         private Label _resultLabel;
         private SeparatorElement _separatorElement;
         private Button _prevButton;
         private Button _nextButton;
-        private List<int> _resultList = new List<int>();
+        private List<OverviewNodeView> _resultList = new List<OverviewNodeView>();
         private int _curIndex;
-        public MicroSearchView(BaseMicroGraphView graph)
+        public OverviewSearchView(OverviewGraphView graph)
         {
             this._owner = graph;
             this.AddStyleSheet(STYLE_PATH);
@@ -80,14 +80,13 @@ namespace MicroGraph.Editor
             }
             if (index > -1 && index < _resultList.Count)
             {
-                _owner.View.ClearSelection();
-                int onlyId = _resultList[index];
-                GraphElement graphElement = _owner.GetElement<GraphElement>(onlyId);
+                _owner.ClearSelection();
+                OverviewNodeView graphElement = _resultList[index];
                 _resultLabel.text = _curIndex + "/" + _resultList.Count;
                 if (graphElement == null)
                     return;
-                _owner.View.AddToSelection(graphElement);
-                _owner.View.FrameSelection();
+                _owner.AddToSelection(graphElement);
+                _owner.FrameSelection();
             }
         }
 
@@ -100,15 +99,8 @@ namespace MicroGraph.Editor
                 _resultLabel.text = "0/0";
                 return;
             }
-            _resultList.AddRange(_owner.editorInfo.Nodes
-                .Where(node => node.Title.Contains(evt.newValue, StringComparison.OrdinalIgnoreCase))
-                .Select(a => a.NodeId));
-            _resultList.AddRange(_owner.editorInfo.VariableNodes
-                .Where(node => node.Name.Contains(evt.newValue, StringComparison.OrdinalIgnoreCase))
-                .Select(a => a.NodeId));
-            _resultList.AddRange(_owner.editorInfo.Stickys
-                .Where(node => node.Content.Contains(evt.newValue, StringComparison.OrdinalIgnoreCase))
-                .Select(a => a.NodeId));
+            _resultList.AddRange(_owner.nodes.OfType<OverviewNodeView>()
+                .Where(node => node.SummaryModel.MicroName.Contains(evt.newValue, StringComparison.OrdinalIgnoreCase)));
             if (_resultList.Count > 0)
             {
                 _curIndex = 1;
@@ -121,7 +113,7 @@ namespace MicroGraph.Editor
 
         private void m_close()
         {
-            _owner.View.Focus();
+            _owner.Focus();
             this.SetDisplay(false);
         }
 

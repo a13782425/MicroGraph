@@ -17,4 +17,7 @@ MicroSettingView > #bottomContainer{
 MicroSettingView > #bottomContainer > Button{
 	flex-grow: 1; 
 	flex-shrink: 1; 
+	font-size: 24px;
+	-unity-font-style: bold;
+	text-shadow: 1px 1px black;
 }

@@ -26,9 +26,20 @@ namespace MicroGraph.Editor
         private List<MicroGraphTemplateModel> _allModels = new List<MicroGraphTemplateModel>();
         private List<MicroGraphTemplateModel> _showModels = new List<MicroGraphTemplateModel>();
         private List<MicroTemplateElement> _cacheList = new List<MicroTemplateElement>();
+        private MicroGraphConfig _editorModel;
+        public MicroGraphConfig editorModel => _editorModel;
         public MicroTemplateControlSubView(BaseMicroGraphView owner)
         {
             this._owner = owner;
+            string graphClassName = owner.CategoryModel.GraphType.FullName;
+            _editorModel = MicroGraphUtils.EditorConfig.GraphConfigs.FirstOrDefault(a => a.GraphClassName == graphClassName);
+            if (_editorModel == null)
+            {
+                _editorModel = new MicroGraphConfig();
+                _editorModel.GraphClassName = graphClassName;
+                MicroGraphUtils.EditorConfig.GraphConfigs.Add(_editorModel);
+                MicroGraphUtils.SaveConfig();
+            }
             this.AddStyleSheet(STYLE_PATH);
             this.AddToClassList("microtemplatecontrol");
             _searchField = new ToolbarSearchField();
@@ -69,7 +80,7 @@ namespace MicroGraph.Editor
             }
             else
             {
-                _showModels.AddRange(_allModels.Where(a => a.title.Contains(character, StringComparison.OrdinalIgnoreCase)));
+                _showModels.AddRange(_allModels.Where(a => a.Title.Contains(character, StringComparison.OrdinalIgnoreCase)));
                 if (_showModels.Count == 0)
                     _emptyLabel.text = "搜索结果为空";
             }
@@ -87,7 +98,7 @@ namespace MicroGraph.Editor
             string graphName = _owner.CategoryModel.GraphType.FullName;
             _allModels.Clear();
             _showModels.Clear();
-            _allModels.AddRange(MicroGraphUtils.EditorConfig.graphTemplates.Where(a => a.graphClassName == graphName));
+            _allModels.AddRange(_editorModel.Templates);
             m_searchTemplate(_searchField.value);
             return true;
         }
@@ -185,15 +196,15 @@ namespace MicroGraph.Editor
         internal void Refresh(MicroGraphTemplateModel item)
         {
             this._item = item;
-            _templateLabel.text = item.title;
-            this.tooltip = item.title;
+            _templateLabel.text = item.Title;
+            this.tooltip = item.Title;
             _warning.SetDisplay(false);
             _warningList.Clear();
             bool isWarning = false;
-            GraphCategoryModel categoryModel = MicroGraphProvider.GetGraphCategory(item.graphClassName);
-            foreach (var node in item.nodes)
+            GraphCategoryModel categoryModel = MicroGraphProvider.GetGraphCategory(item.GraphClassName);
+            foreach (var node in item.Nodes)
             {
-                NodeCategoryModel nodeCategory = categoryModel.NodeCategories.FirstOrDefault(a => a.NodeClassType.FullName == node.className);
+                NodeCategoryModel nodeCategory = categoryModel.NodeCategories.FirstOrDefault(a => a.NodeClassType.FullName == node.ClassName);
                 if (nodeCategory == null || !nodeCategory.IsEnable)
                 {
                     isWarning = true;
@@ -211,7 +222,7 @@ namespace MicroGraph.Editor
         {
             evt.menu.AppendAction("删除", (e) =>
             {
-                MicroGraphUtils.EditorConfig.graphTemplates.Remove(_item);
+                _control.editorModel.Templates.Remove(_item);
                 MicroGraphUtils.SaveConfig();
                 MicroGraphEventListener.OnEventAll(MicroGraphEventIds.GRAPH_TEMPLATE_CHANGED);
             });
@@ -220,14 +231,14 @@ namespace MicroGraph.Editor
 
         private void onRename(string oldName, string newName)
         {
-            if (!MicroGraphUtils.TitleValidity(newName, MicroGraphUtils.EditorConfig.groupTitleLength))
+            if (!MicroGraphUtils.TitleValidity(newName, MicroGraphUtils.EditorConfig.GroupTitleLength))
             {
                 _templateLabel.text = oldName;
                 _control.owner.owner.ShowNotification(new GUIContent("模板名不合法"), MicroGraphUtils.NOTIFICATION_TIME);
                 return;
             }
             this.tooltip = newName;
-            _item.title = newName;
+            _item.Title = newName;
             MicroGraphUtils.SaveConfig();
             MicroGraphEventListener.OnEventAll(MicroGraphEventIds.GRAPH_TEMPLATE_CHANGED);
         }
@@ -265,9 +276,9 @@ namespace MicroGraph.Editor
             Color faceColor = NODE_COLOR;
             faceColor.a = 0.3f;
 
-            foreach (var item in _item.nodes)
+            foreach (var item in _item.Nodes)
             {
-                Rect rect = m_calculateElementRect(item.pos, NODE_SIZE, factor, xOffset, yOffset);
+                Rect rect = m_calculateElementRect(item.Pos, NODE_SIZE, factor, xOffset, yOffset);
                 s_cachedRect[0].Set(rect.xMin, rect.yMin, 0f);
                 s_cachedRect[1].Set(rect.xMax, rect.yMin, 0f);
                 s_cachedRect[2].Set(rect.xMax, rect.yMax, 0f);
@@ -277,9 +288,9 @@ namespace MicroGraph.Editor
 
             faceColor = VAR_NODE_COLOR;
             faceColor.a = 0.3f;
-            foreach (var item in _item.varNodes)
+            foreach (var item in _item.VarNodes)
             {
-                Rect rect = m_calculateElementRect(item.pos, VAR_SIZE, factor, xOffset, yOffset);
+                Rect rect = m_calculateElementRect(item.Pos, VAR_SIZE, factor, xOffset, yOffset);
                 s_cachedRect[0].Set(rect.xMin, rect.yMin, 0f);
                 s_cachedRect[1].Set(rect.xMax, rect.yMin, 0f);
                 s_cachedRect[2].Set(rect.xMax, rect.yMax, 0f);
@@ -289,9 +300,9 @@ namespace MicroGraph.Editor
 
             faceColor = STICKY_COLOR;
             faceColor.a = 0.3f;
-            foreach (var item in _item.stickys)
+            foreach (var item in _item.Stickys)
             {
-                Rect rect = m_calculateElementRect(item.pos, NODE_SIZE, factor, xOffset, yOffset);
+                Rect rect = m_calculateElementRect(item.Pos, NODE_SIZE, factor, xOffset, yOffset);
                 s_cachedRect[0].Set(rect.xMin, rect.yMin, 0f);
                 s_cachedRect[1].Set(rect.xMax, rect.yMin, 0f);
                 s_cachedRect[2].Set(rect.xMax, rect.yMax, 0f);
@@ -327,12 +338,12 @@ namespace MicroGraph.Editor
             _templateRect.xMin = float.MaxValue;
             _templateRect.yMin = float.MaxValue;
 
-            foreach (var item in _item.nodes)
-                m_calculate(item.pos, NODE_SIZE);
-            foreach (var item in _item.varNodes)
-                m_calculate(item.pos, VAR_SIZE);
-            foreach (var item in _item.stickys)
-                m_calculate(item.pos, NODE_SIZE);
+            foreach (var item in _item.Nodes)
+                m_calculate(item.Pos, NODE_SIZE);
+            foreach (var item in _item.VarNodes)
+                m_calculate(item.Pos, VAR_SIZE);
+            foreach (var item in _item.Stickys)
+                m_calculate(item.Pos, NODE_SIZE);
             void m_calculate(Vector2 pos, Vector2 size)
             {
                 Vector2 min = pos;

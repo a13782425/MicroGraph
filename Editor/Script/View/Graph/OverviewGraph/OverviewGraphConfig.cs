@@ -28,7 +28,7 @@ namespace MicroGraph.Editor
             for (int i = GroupInfos.Count - 1; i >= 0; i--)
             {
                 var groupInfo = GroupInfos[i];
-                if (MicroGraphProvider.GraphCategoryList.FirstOrDefault(a => a.GraphType.FullName == groupInfo.groupKey) == null)
+                if (MicroGraphProvider.GraphCategoryList.FirstOrDefault(a => a.GraphType.FullName == groupInfo.GroupKey) == null)
                     GroupInfos.RemoveAt(i);
             }
         }
@@ -38,24 +38,24 @@ namespace MicroGraph.Editor
     internal sealed class OverviewGroupInfo
     {
         [SerializeField]
-        public string groupKey;
+        public string GroupKey;
         [SerializeField]
-        public int columnCount = 0;
+        public int ColumnCount = 0;
         [SerializeField]
-        public Vector2 pos = Vector2.zero;
+        public Vector2 Pos = Vector2.zero;
     }
     [Serializable]
     internal sealed class OverviewFavoriteGroupInfo
     {
         [SerializeField]
-        public string favoriteName;
+        public string FavoriteName;
         [SerializeField]
-        public int columnCount = 0;
+        public int ColumnCount = 0;
         [SerializeField]
-        public Vector2 pos = Vector2.zero;
+        public Vector2 Pos = Vector2.zero;
         [SerializeField]
-        public Color color;
+        public Color Color = Color.black;
         [SerializeField]
-        public List<string> graphs = new List<string>();
+        public List<string> Graphs = new List<string>();
     }
 }

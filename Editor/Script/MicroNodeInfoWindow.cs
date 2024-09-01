@@ -67,7 +67,7 @@ namespace MicroGraph.Editor
                 //明亮主题
                 contentContainer.AddStyleSheet("Uss/LightTheme");
             }
-            contentContainer.AddStyleSheet("Uss/Tailwind");
+            //contentContainer.AddStyleSheet("Uss/Tailwind");
             contentContainer.AddStyleSheet("Uss/MicroNodeInfoWindow");
             titleContainer = new VisualElement();
             titleContainer.AddToClassList("title_container");
@@ -109,7 +109,7 @@ namespace MicroGraph.Editor
             {
                 switch (str)
                 {
-                    case nameof(MicroGraphUtils.EditorConfig.editorFont):
+                    case nameof(MicroGraphUtils.EditorConfig.EditorFont):
                         m_onEditorFontChanged(null);
                         break;
                     default:
@@ -229,7 +229,10 @@ namespace MicroGraph.Editor
             }
             else
             {
-                nodeTypeModels.AddRange(nodeTypeModelDics.Values.Where(a => a.nodeCategory.NodeFullName.Contains(str, StringComparison.OrdinalIgnoreCase)));
+                nodeTypeModels.AddRange(
+                    nodeTypeModelDics.Values.Where(
+                        a => a.nodeCategory.NodeFullName.Contains(str, StringComparison.OrdinalIgnoreCase)
+                        || a.nodeCategory.NodeClassType.FullName.Contains(str, StringComparison.OrdinalIgnoreCase)));
             }
             m_sort();
         }
@@ -312,6 +315,7 @@ namespace MicroGraph.Editor
             private List<Label> labels = new List<Label>();
             private NodeTypeModel model;
             private MicroNodeInfoWindow window;
+            private PopupWindowContent _curPopupWindow;
             private int index;
             public NodeUsageElement(MicroNodeInfoWindow window)
             {
@@ -420,12 +424,33 @@ namespace MicroGraph.Editor
                 {
                     lab = new Label();
                     lab.AddToClassList("graph_path_label");
+                    Color color = MicroGraphUtils.GetColor(model.nodeCategory.NodeClassType.Name);
+                    lab.style.borderTopColor = color;
+                    lab.style.borderLeftColor = color;
+                    lab.style.borderBottomColor = color;
+                    lab.focusable = true;
+                    lab.AddManipulator(new Clickable(onLabelClick));
                     lab.AddManipulator(new ContextualMenuManipulator(onLabelContextualMenu));
                     this.usageContent.Add(lab);
                 }
                 return lab;
             }
 
+
+            private void onLabelClick(EventBase evt)
+            {
+                if (evt.target is not Label label)
+                    return;
+                if (label.text == "无")
+                    return;
+                if (label.userData is not string path)
+                    return;
+                BaseMicroGraph graph = MicroGraphUtils.GetMicroGraph(path);
+                if (graph == null)
+                    return;
+
+                _curPopupWindow = MicroNodeInfoPopup.ShowNodeInfoPopup(this.window, graph, model.nodeCategory);
+            }
             private void onLabelContextualMenu(ContextualMenuPopulateEvent evt)
             {
                 if (evt.target is not Label label)
@@ -433,8 +458,19 @@ namespace MicroGraph.Editor
                 if (label.text == "无")
                     return;
                 evt.menu.AppendAction("定位微图", m_location, DropdownMenuAction.AlwaysEnabled, evt.target);
+                evt.menu.AppendAction("打开微图", m_openGraph, DropdownMenuAction.AlwaysEnabled, evt.target);
                 evt.menu.AppendSeparator();
             }
+
+            private void m_openGraph(DropdownMenuAction action)
+            {
+                if (action.userData is not Label label)
+                    return;
+                if (label.userData is not string path)
+                    return;
+                MicroGraphUtils.OpenMicroGraph(path);
+            }
+
             private void m_location(DropdownMenuAction action)
             {
                 if (action.userData is not Label label)

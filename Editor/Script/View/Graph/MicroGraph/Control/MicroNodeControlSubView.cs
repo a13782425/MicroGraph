@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.GraphView;
@@ -12,13 +14,13 @@ namespace MicroGraph.Editor
         private BaseMicroGraphView _owner;
         private const string STYLE_PATH = "Uss/MicroGraph/Control/MicroNodeControlSubView";
         private Label _warningLabel;
-        private ScrollView _nodeContent;
+        private ScrollView _nodeContainer;
         private Label _nodeTitleLabel;
         private Label _nodeClassLabel;
         private Label _varTitleLabel;
-        private VisualElement _varContent;
+        private VisualElement _varContainer;
         private Label _varEdgeTitleLabel;
-        private VisualElement _varEdgeContent;
+        private VisualElement _varEdgeContainer;
         public MicroNodeControlSubView(BaseMicroGraphView owner)
         {
             this.AddStyleSheet(STYLE_PATH);
@@ -28,36 +30,36 @@ namespace MicroGraph.Editor
             _warningLabel.AddToClassList("warning_label");
             _warningLabel.text = "暂无选中节点";
             this.Add(_warningLabel);
-            _nodeContent = new ScrollView(ScrollViewMode.Vertical);
-            _nodeContent.AddToClassList("nodecontent");
+            _nodeContainer = new ScrollView(ScrollViewMode.Vertical);
+            _nodeContainer.AddToClassList("nodecontainer");
             _nodeTitleLabel = new Label();
             _nodeClassLabel = new Label();
             _varTitleLabel = new Label();
-            _varContent = new VisualElement();
+            _varContainer = new VisualElement();
             _varEdgeTitleLabel = new Label();
-            _varEdgeContent = new VisualElement();
+            _varEdgeContainer = new VisualElement();
             _nodeTitleLabel.AddToClassList("title_label");
             _nodeClassLabel.AddToClassList("class_label");
             _varTitleLabel.AddToClassList("title_label");
-            _varContent.AddToClassList("var_content");
+            _varContainer.AddToClassList("var_container");
             _varEdgeTitleLabel.AddToClassList("title_label");
-            _varEdgeContent.AddToClassList("var_content");
-            _varContent.SetEnabled(false);
-            _varEdgeContent.SetEnabled(false);
-            _nodeContent.Add(_nodeTitleLabel);
-            _nodeContent.Add(_nodeClassLabel);
-            _nodeContent.Add(_varTitleLabel);
-            _nodeContent.Add(_varContent);
-            _nodeContent.Add(_varEdgeTitleLabel);
-            _nodeContent.Add(_varEdgeContent);
-            this.Add(_nodeContent);
+            _varEdgeContainer.AddToClassList("var_container");
+            _varContainer.SetEnabled(false);
+            _varEdgeContainer.SetEnabled(false);
+            _nodeContainer.Add(_nodeTitleLabel);
+            _nodeContainer.Add(_nodeClassLabel);
+            _nodeContainer.Add(_varTitleLabel);
+            _nodeContainer.Add(_varContainer);
+            _nodeContainer.Add(_varEdgeTitleLabel);
+            _nodeContainer.Add(_varEdgeContainer);
+            this.Add(_nodeContainer);
             owner.onSelectChanged += m_onSelectChanged;
         }
 
         private void m_onSelectChanged(List<ISelectable> list)
         {
             _warningLabel.SetDisplay(true);
-            _nodeContent.SetDisplay(false);
+            _nodeContainer.SetDisplay(false);
             if (list.Count == 0)
             {
                 _warningLabel.text = "请选中节点";
@@ -91,52 +93,92 @@ namespace MicroGraph.Editor
                 return;
             }
             _warningLabel.SetDisplay(false);
-            _nodeContent.SetDisplay(true);
+            _nodeContainer.SetDisplay(true);
             _nodeTitleLabel.text = "节点标题: " + nodeView.nodeView.Title;
             _nodeClassLabel.text = "节点类名: " + nodeView.nodeView.Target.GetType().FullName;
-            _varContent.Clear();
-            _varEdgeContent.Clear();
+            _varContainer.Clear();
+            _varEdgeContainer.Clear();
             _varTitleLabel.text = "变量信息";
             _varEdgeTitleLabel.text = "变量连线";
             Label idLabel = new Label($"唯一Id: {nodeView.nodeView.Target.OnlyId}");
             idLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            _varContent.Add(idLabel);
+            _varContainer.Add(idLabel);
             foreach (KeyValuePair<string, FieldInfo> item in nodeView.nodeView.category.GetNodeFieldInfos())
             {
-                VisualElement subContent = new VisualElement();
-                subContent.AddToClassList("var_sub_content");
+                VisualElement subContainer = new VisualElement();
+                subContainer.AddToClassList("var_sub_container");
                 FieldInfo fieldInfo = item.Value;
                 if (fieldInfo.FieldIsInput())
                 {
                     if (nodeView.nodeView.Target.VariableEdges.FirstOrDefault(a => a.fieldName == fieldInfo.Name && a.isInput) != null)
                     {
-                        subContent.Add(new Label($"{fieldInfo.GetFieldDisplayName()}: 端口已连线"));
-                        _varContent.Add(subContent);
+                        subContainer.Add(new Label($"{fieldInfo.GetFieldDisplayName()}: 端口已连线"));
+                        _varContainer.Add(subContainer);
                         continue;
                     }
                 }
                 Label label = new Label();
-                object value = fieldInfo.GetValue(nodeView.nodeView.Target);
-                label.text = $"{fieldInfo.GetFieldDisplayName()}: {(value == null ? "空" : value.ToString())}";
-                subContent.Add(label);
-                _varContent.Add(subContent);
+                if (fieldInfo.FieldType.IsGenericType)
+                {
+                    if (fieldInfo.FieldType.IsArray)
+                    {
+                        label.text = $"{fieldInfo.GetFieldDisplayName()}: 数组类型";
+                    }
+                    else if (IsDictionary(fieldInfo.FieldType))
+                    {
+                        label.text = $"{fieldInfo.GetFieldDisplayName()}: 字典类型";
+                    }
+                    else if (IsCollection(fieldInfo.FieldType))
+                    {
+                        label.text = $"{fieldInfo.GetFieldDisplayName()}: 集合类型";
+                    }
+                    else
+                    {
+                        label.text = $"{fieldInfo.GetFieldDisplayName()}: 其他泛型";
+                    }
+                }
+                else
+                {
+                    object value = fieldInfo.GetValue(nodeView.nodeView.Target);
+                    label.text = $"{fieldInfo.GetFieldDisplayName()}: {(value == null ? "空" : value.ToString())}";
+                }
+                subContainer.Add(label);
+                _varContainer.Add(subContainer);
             }
             if (nodeView.nodeView.Target.VariableEdges.Count == 0)
             {
-                _varEdgeContent.Add(new Label($"没有连线"));
+                _varEdgeContainer.Add(new Label($"没有连线"));
             }
             else
             {
                 foreach (var item in nodeView.nodeView.Target.VariableEdges)
                 {
-                    VisualElement subContent = new VisualElement();
-                    subContent.AddToClassList("var_sub_content");
-                    subContent.Add(new Label($"是否是入端口：" + (item.isInput ? "是" : "否")));
-                    subContent.Add(new Label($"变量名：" + item.varName));
-                    subContent.Add(new Label($"字段名：" + item.fieldName));
-                    _varEdgeContent.Add(subContent);
+                    VisualElement subContainer = new VisualElement();
+                    subContainer.AddToClassList("var_sub_container");
+                    subContainer.Add(new Label($"是否是入端口：" + (item.isInput ? "是" : "否")));
+                    subContainer.Add(new Label($"变量名：" + item.varName));
+                    subContainer.Add(new Label($"字段名：" + item.fieldName));
+                    _varEdgeContainer.Add(subContainer);
                 }
             }
+        }
+        // 检查指定类型是否是字典类型
+        private static bool IsDictionary(Type type)
+        {
+            bool isIDictionary = typeof(IDictionary).IsAssignableFrom(type);
+            bool isGenericDict = type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+
+            return isIDictionary || isGenericDict;
+        }
+
+        // 检查指定类型是否是集合类型
+        private static bool IsCollection(Type type)
+        {
+            bool isICollection = typeof(ICollection).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type);
+            bool isGenericEnumerable = typeof(IEnumerable<>).IsAssignableFrom(type.GetGenericTypeDefinition());
+            bool hasGenericInterface = type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+
+            return isICollection || isGenericEnumerable || hasGenericInterface;
         }
         public void Show()
         {
