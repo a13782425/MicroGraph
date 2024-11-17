@@ -77,6 +77,11 @@ namespace MicroGraph.Editor
         /// 画变量的链接
         /// </summary>
         void DrawLink(BaseMicroNodeView nodeView);
+
+        /// <summary>
+        /// value值转字符串
+        /// </summary>
+        string ToValueString() => "";
     }
     public abstract class BaseNodeFieldElement<T> : INodeFieldElement
     {
@@ -142,7 +147,7 @@ namespace MicroGraph.Editor
                 }
                 _root.Add(inputField);
                 inputField.RegisterCallback<ChangeEvent<T>>(m_onValueChanged);
-                Value = (T)Field.GetValue(this.nodeView.Target);
+                this.Value = (T)Field.GetValue(this.nodeView.Target);
             }
             if (portDir != PortDirEnum.None)
             {
@@ -171,7 +176,10 @@ namespace MicroGraph.Editor
             }
             this.Title = Field.GetFieldDisplayName();
         }
-
+        /// <summary>
+        /// 画变量的链接
+        /// <para>如果Port为空，默认跳过</para>
+        /// </summary>
         public virtual void DrawLink(BaseMicroNodeView nodeView)
         {
             if (Port == null)
@@ -193,30 +201,33 @@ namespace MicroGraph.Editor
             }
             inputField?.SetDisplay(Port.IsInput && count == 0);
         }
+        ///// <summary>
+        ///// 画变量的链接
+        ///// <para>如果Port为空，默认跳过</para>
+        ///// </summary>
+        //public virtual void DrawVarLink(MicroVariableEdge microVariable)
+        //{
+        //    if (Port == null)
+        //        return;
+        //    Node node = nodeView.owner.GetElement<Node>(microVariable.nodeId);
+        //    if (node == null)
+        //    {
+        //        nodeView.Target.VariableEdges.Remove(microVariable);
+        //        return;
+        //    }
 
-        public virtual void DrawVarLink(MicroVariableEdge microVariable)
-        {
-            if (Port == null)
-                return;
-            Node node = nodeView.owner.GetElement<Node>(microVariable.nodeId);
-            if (node == null)
-            {
-                nodeView.Target.VariableEdges.Remove(microVariable);
-                return;
-            }
-
-            if (microVariable.isInput != Port.IsInput)
-                return;
-            switch (node)
-            {
-                case MicroVariableNodeView.InternalNodeView varNodeView:
-                    Port.ConnectWithoutNotify(microVariable.isInput ? varNodeView.nodeView.OutPut : varNodeView.nodeView.Input);
-                    inputField?.SetDisplay(false);
-                    break;
-                default:
-                    break;
-            }
-        }
+        //    if (microVariable.isInput != Port.IsInput)
+        //        return;
+        //    switch (node)
+        //    {
+        //        case MicroVariableNodeView.InternalNodeView varNodeView:
+        //            Port.ConnectWithoutNotify(microVariable.isInput ? varNodeView.nodeView.OutPut : varNodeView.nodeView.Input);
+        //            inputField?.SetDisplay(false);
+        //            break;
+        //        default:
+        //            break;
+        //    }
+        //}
         /// <summary>
         /// 当端口发生连接
         /// </summary>
@@ -266,6 +277,11 @@ namespace MicroGraph.Editor
         {
             Value = evt.newValue;
             Field.SetValue(this.nodeView.Target, evt.newValue);
+        }
+
+        string INodeFieldElement.ToValueString()
+        {
+            return Value == null ? "null" : Value.ToString();
         }
     }
 

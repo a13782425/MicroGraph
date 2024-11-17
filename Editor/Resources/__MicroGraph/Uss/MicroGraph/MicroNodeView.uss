@@ -2,9 +2,17 @@
 	min-width: 120px;
 	min-height: 60px;
 }
+.internal_node > #selection-border {
+	border-width: 2px;
+}
+
 .internal_node > #node-border > #title{
 	border-top-left-radius: 6px;
 	border-top-right-radius: 6px;
+	border-top-width: var(--micrograph-metrics-default-border);
+	border-right-width: var(--micrograph-metrics-default-border);
+	border-left-width: var(--micrograph-metrics-default-border);
+
 }
 .internal_node EditorLabelElement > #title_label{
 	color: var(--micrograph-colors-default-text);
@@ -35,7 +43,7 @@
 .node_state_unlock{
 	background-image: var(--micrograph-icons-node_unlock);
 }
-.node_type_root{
+/* .node_type_root{
 	background-image: var(--micrograph-icons-node_root);
 }
 .node_type_flow{
@@ -48,7 +56,7 @@
 
 .node_type_wait{
 	background-image: var(--micrograph-icons-node_wait);
-}
+} */
 
 
 /*ºáÊúÑùÊ½*/

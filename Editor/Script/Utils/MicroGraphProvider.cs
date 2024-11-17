@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 using UnityDebug = UnityEngine.Debug;
 
 namespace MicroGraph.Editor
@@ -33,10 +34,14 @@ namespace MicroGraph.Editor
 
         /// <summary>
         /// 缓存所有节点
+        /// <para>key 节点类型</para>
+        /// <para>value: 节点信息</para>
         /// </summary>
         private static Dictionary<Type, NodeCategoryModel> _allNodeCategoryMapping = new Dictionary<Type, NodeCategoryModel>();
         /// <summary>
         /// 所有节点
+        /// <para>key 节点类型</para>
+        /// <para>value: 节点信息</para>
         /// </summary>
         public static Dictionary<Type, NodeCategoryModel> NodeCategoryMapping => _allNodeCategoryMapping;
         /// <summary>
@@ -250,9 +255,7 @@ namespace MicroGraph.Editor
         internal static void InitGraphCategory(BaseMicroGraphView graphView, GraphCategoryModel graphCategory)
         {
             if (graphCategory == null || graphCategory.IsInit || graphCategory.NodeCategories.Count > 0)
-            {
                 return;
-            }
             graphCategory.IsInit = true;
             List<Type> usableNodeTypes = graphView.getUsableNodeTypes() ?? EMPTY_TYPE_LIST;
             List<Type> unusableNodeTypes = graphView.getUnusableNodeTypes() ?? EMPTY_TYPE_LIST;
@@ -262,6 +265,18 @@ namespace MicroGraph.Editor
             List<Type> tempList = new List<Type>();
 
             #region 筛选节点类型
+
+            //Assembly curAssembly = graphCategory.GraphType.Assembly;
+            //AssemblyName curAssemblyName = curAssembly.GetName();
+            // AssemblyName[] assemblies = graphCategory.GraphType.Assembly.GetReferencedAssemblies();
+            bool isReference(Type type)
+            {
+                return true;
+                //if (type.Assembly == curAssembly)
+                //    return true;
+                //AssemblyName[] assemblies = type.Assembly.GetReferencedAssemblies();
+                //return assemblies.Contains(curAssemblyName);
+            }
 
             if (usableNodeTypes.Count > 0)
             {
@@ -277,13 +292,24 @@ namespace MicroGraph.Editor
                 tempList.AddRange(_allNodeCategoryMapping.Keys.Except(unusableNodeTypes));
                 foreach (var type in tempList)
                 {
-                    if (_allNodeCategoryMapping.TryGetValue(type, out NodeCategoryModel nodeCategory))
+                    if (_allNodeCategoryMapping.TryGetValue(type, out NodeCategoryModel nodeCategory) && isReference(type))
                         graphCategory.NodeCategories.Add(nodeCategory);
                 }
             }
             else
             {
-                graphCategory.NodeCategories.AddRange(_allNodeCategoryMapping.Values);
+                foreach (var item in _allNodeCategoryMapping.Values)
+                {
+                    if (isReference(item.NodeClassType))
+                        graphCategory.NodeCategories.Add(item);
+                }
+            }
+            if (_allNodeCategoryMapping.TryGetValue(typeof(MicroPackageNode),out NodeCategoryModel packageCategoryModel))
+            {
+                if (!graphCategory.NodeCategories.Contains(packageCategoryModel))
+                {
+                    graphCategory.NodeCategories.Add(packageCategoryModel);
+                }
             }
             if (uniqueNodeTypes.Count > 0)
             {
@@ -316,12 +342,17 @@ namespace MicroGraph.Editor
                 {
                     if (unusableVarTypes.Contains(item.Value.VarType) || unusableVarTypes.Contains(item.Value.VarBoxType))
                         continue;
-                    graphCategory.VariableCategories.Add(item.Value);
+                    if (isReference(item.Value.VarBoxType))
+                        graphCategory.VariableCategories.Add(item.Value);
                 }
             }
             else
             {
-                graphCategory.VariableCategories.AddRange(_allVarCategoryMapping.Values);
+                foreach (var item in _allVarCategoryMapping.Values)
+                {
+                    if (isReference(item.VarType))
+                        graphCategory.VariableCategories.Add(item);
+                }
             }
 
             #endregion
@@ -503,7 +534,15 @@ namespace MicroGraph.Editor
                 MicroGraphAttribute graphAttr = item.GetCustomAttribute<MicroGraphAttribute>();
                 if (graphAttr != null)
                 {
-                    graphData.GraphColor = graphAttr.Color.HasValue ? graphAttr.Color.Value : graphData.GraphColor;
+                    Color color = graphData.GraphColor;
+                    if (!string.IsNullOrWhiteSpace(graphAttr.Color))
+                    {
+                        if (!ColorUtility.TryParseHtmlString(graphAttr.Color, out color))
+                        {
+                            color = graphData.GraphColor;
+                        }
+                    }
+                    graphData.GraphColor = color;
                     graphData.GraphName = graphAttr.GraphName;
                 }
                 GraphCategoryList.Add(graphData);
@@ -546,23 +585,28 @@ namespace MicroGraph.Editor
             {
                 if (nodeType.IsAbstract)
                     continue;
+
                 MicroNodeAttribute nodeAttr = nodeType.GetCustomAttribute<MicroNodeAttribute>();
                 NodeCategoryModel nodeCategory = new NodeCategoryModel();
                 nodeCategory.NodeClassType = nodeType;
                 nodeCategory.ViewClassType = typeof(BaseMicroNodeView);
                 nodeCategory.PortDir = PortDirEnum.All;
                 nodeCategory.IsHorizontal = true;
-                nodeCategory.IsEnable = true;
+                nodeCategory.MinWidth = -1;
+                nodeCategory.EnableState = MicroNodeEnableState.Enabled;
+                nodeCategory.NodeTitleColor = NodeTitleColorType.Default;
                 if (nodeAttr != null)
                 {
                     string[] strs = nodeAttr.NodeName.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
                     nodeCategory.NodeLayers = strs;
                     nodeCategory.NodeDescribe = nodeAttr.Describe;
                     nodeCategory.NodeFullName = nodeAttr.NodeName;
+                    nodeCategory.MinWidth = nodeAttr.MinWidth;
                     nodeCategory.PortDir = nodeAttr.PortDir;
                     nodeCategory.IsHorizontal = nodeAttr.IsHorizontal;
-                    nodeCategory.IsEnable = nodeAttr.IsEnable;
+                    nodeCategory.EnableState = nodeAttr.EnableState;
                     nodeCategory.NodeType = nodeAttr.NodeType;
+                    nodeCategory.NodeTitleColor = nodeAttr.NodeTitleColor;
                 }
                 else
                 {

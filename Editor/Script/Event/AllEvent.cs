@@ -49,9 +49,80 @@ namespace MicroGraph.Editor
         /// </summary>
         public const int OVERVIEW_CHANGED = -10700;
         /// <summary>
-        /// 变化
+        /// 模板变化
         /// </summary>
         public const int GRAPH_TEMPLATE_CHANGED = -10800;
+        /// <summary>
+        /// 微图包变化
+        /// args ：MicroPackageInfo
+        /// </summary>
+        public const int GRAPH_PACKAGE_CHANGED = -10900;
+        /// <summary>
+        /// 微图包移除
+        /// args ：MicroPackageInfo
+        /// </summary>
+        public const int GRAPH_PACKAGE_DELETE = -11000;
+
+#if MICRO_GRAPH_DEBUG
+        /// <summary>
+        /// 全局发生变化
+        /// 调试器状态变化
+        /// </summary>
+        public const int DEBUGGER_STATE_CHANGED = -20000;
+        /// <summary>
+        /// 全局发生变化
+        /// 调试器接收到数据
+        /// args ：NetMessagePackage
+        /// </summary>
+        public const int DEBUGGER_RECEIVE_NET_DATA = -20100;
+        /// <summary>
+        /// 全局发生变化
+        /// 调试器接受到微图数据发生变化
+        /// args ：DebuggerGraphData
+        /// </summary>
+        public const int DEBUGGER_GLOBAL_GRAPH_DATA_CHANGED = -20210;
+        /// <summary>
+        /// 全局发生变化
+        /// 调试器接受到微图名字数据发生变化
+        /// args ：DebuggerGraphData
+        /// </summary>
+        public const int DEBUGGER_GLOBAL_GRAPHRENAME_DATA_CHANGED = -20220;
+        /// <summary>
+        /// 全局变化
+        /// 删除一个微图
+        /// args ：DebuggerGraphDeleteData
+        /// </summary>
+        public const int DEBUGGER_GLOBAL_GRAPHDELETE_DATA_CHANGED = -20221;
+        /// <summary>
+        /// 全局发生变化
+        /// 调试器接受到微图节点数据发生变化(不会进行唯一id区分)
+        /// args ：DebuggerNodeData
+        /// </summary>
+        public const int DEBUGGER_GLOBAL_NODE_DATA_CHANGED = -20230;
+        /// <summary>
+        /// 全局发生变化
+        /// 调试器接受到微图变量数据发生变化(不会进行唯一id区分)
+        /// args ：DebuggerVarData
+        /// </summary>
+        public const int DEBUGGER_GLOBAL_VAR_DATA_CHANGED = -20240;
+        /// <summary>
+        /// 局部发生变化
+        /// 调试器微图状态变化
+        /// </summary>
+        public const int DEBUGGER_LOCAL_GRAPH_STATE_CHANGED = -20250;
+        /// <summary>
+        /// 局部发生变化
+        /// 调试器接受到微图变量数据发生变化(区分了唯一id)
+        /// args ：string 运行时名，可为空
+        /// </summary>
+        public const int DEBUGGER_LOCAL_NODE_DATA_CHANGED = -20260;
+        /// <summary>
+        /// 局部发生变化
+        /// 调试器接受到微图变量数据发生变化(区分了唯一id)
+        /// args ：string 运行时名，可为空
+        /// </summary>
+        public const int DEBUGGER_LOCAL_VAR_DATA_CHANGED = -20270;
+#endif
     }
 
     /// <summary>

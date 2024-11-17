@@ -24,6 +24,8 @@ namespace MicroGraph.Editor
             //private Label _emptyLabel;
             private BaseMicroGraph microGraph;
             private NodeCategoryModel nodeCategory;
+            private VisualElement _selectVe;
+            private Color _selectColor;
             public int nodeCount;
             public override void OnOpen()
             {
@@ -71,6 +73,11 @@ namespace MicroGraph.Editor
                     nodeInfoVisual.Initialize(node, nodeEditor, nodeCategory);
                     _scrollViewContainer.Add(nodeInfoVisual);
                 }
+                _selectVe.SetPseudoStates(_selectVe.GetPseudoStates() | CustomPseudoStates.Checked);
+                _selectColor = _selectVe.style.backgroundColor.value;
+                Color color = MicroGraphUtils.GetColor(nodeCategory.NodeClassType.Name);
+                color.a = 0.5f;
+                _selectVe.style.backgroundColor = color;
             }
 
             private void m_openClick()
@@ -82,6 +89,8 @@ namespace MicroGraph.Editor
 
             public override void OnClose()
             {
+                _selectVe.SetPseudoStates(_selectVe.GetPseudoStates() & (~CustomPseudoStates.Checked));
+                _selectVe.style.backgroundColor = _selectColor;
                 MicroGraphUtils.UnloadObject(microGraph);
                 NodeInfoPopupShow = false;
             }
@@ -94,11 +103,11 @@ namespace MicroGraph.Editor
                 return new Vector2(nodeCount > 2 ? 296 : 284, 320);
             }
 
-            public void Show(Rect rect, BaseMicroGraph graph, NodeCategoryModel nodeCategory)
+            public void Show(Rect rect, BaseMicroGraph graph, NodeCategoryModel nodeCategory, VisualElement selectVe)
             {
                 this.microGraph = graph;
                 this.nodeCategory = nodeCategory;
-
+                this._selectVe = selectVe;
                 UnityPopupWindow.Show(rect, this);
             }
         }
@@ -229,7 +238,7 @@ namespace MicroGraph.Editor
             }
         }
 
-        internal static PopupWindowContent ShowNodeInfoPopup(MicroNodeInfoWindow window, BaseMicroGraph graph, NodeCategoryModel nodeCategory)
+        internal static PopupWindowContent ShowNodeInfoPopup(MicroNodeInfoWindow window, BaseMicroGraph graph, NodeCategoryModel nodeCategory, VisualElement selectVe)
         {
             WindowContent windowContent = new WindowContent();
             windowContent.nodeCount = graph.Nodes.Count(a => a.GetType() == nodeCategory.NodeClassType);
@@ -238,7 +247,7 @@ namespace MicroGraph.Editor
             rect.y -= 320;
             rect.width = windowContent.nodeCount > 2 ? 296 : 284;
             rect.height = 320;
-            windowContent.Show(rect, graph, nodeCategory);
+            windowContent.Show(rect, graph, nodeCategory, selectVe);
             return windowContent;
         }
     }

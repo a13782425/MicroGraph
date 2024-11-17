@@ -62,8 +62,8 @@ namespace MicroGraph.Editor
             {
                 itemType = ItemType.Item,
                 value = value.value,
-                displayName = string.IsNullOrWhiteSpace(value.displayName) ? value.value : string.Empty,
-                categoryName = string.IsNullOrWhiteSpace(value.categoryName) ? value.value : string.Empty
+                displayName = string.IsNullOrWhiteSpace(value.displayName) ? value.value : value.displayName,
+                categoryName = value.categoryName
             });
         }
 
@@ -149,6 +149,7 @@ namespace MicroGraph.Editor
             readonly List<SearchPopupContent.Item> m_Items = new List<SearchPopupContent.Item>();
 
             Vector2 m_Size;
+            Vector2 m_Scale;
             string m_CurrentActiveValue;
             int m_SelectedIndex = -1;
             ScrollView m_ScrollView;
@@ -156,15 +157,15 @@ namespace MicroGraph.Editor
 
             public event Action<string> onSelectionChanged;
 
-            public void Show(Rect rect, string currentValue, IEnumerable<SearchPopupContent.Item> items)
+            public void Show(Rect rect, Vector2 scale, string currentValue, IEnumerable<SearchPopupContent.Item> items)
             {
                 m_CurrentActiveValue = currentValue;
 
                 m_Items.Clear();
                 m_Items.AddRange(items);
-
+                m_Scale = scale;
                 m_Size = new Vector2(rect.width, 22 * m_Items.Count + 36);
-                m_Size.y = Mathf.Min(240, m_Size.y);
+                m_Size.y = Mathf.Min(240, m_Size.y * m_Scale.y);
                 UnityPopupWindow.Show(rect, this);
             }
 
@@ -249,6 +250,17 @@ namespace MicroGraph.Editor
                 }, TrickleDown.TrickleDown);
 
                 editorWindow.rootVisualElement.Add(m_ScrollView);
+                editorWindow.rootVisualElement.RegisterCallback<GeometryChangedEvent>(onGeometryChanged);
+            }
+            private void onGeometryChanged(GeometryChangedEvent evt)
+            {
+                editorWindow.rootVisualElement.UnregisterCallback<GeometryChangedEvent>(onGeometryChanged);
+                Vector2 size = editorWindow.rootVisualElement.worldBound.size;
+                Vector2 newSize = size / m_Scale.x;
+                editorWindow.rootVisualElement.style.width = newSize.x;
+                editorWindow.rootVisualElement.style.height = newSize.y;
+                editorWindow.rootVisualElement.transform.scale = m_Scale;
+                editorWindow.rootVisualElement.transform.position = new Vector3((size.x - newSize.x) * 0.5f, (size.y - newSize.y) * 0.5f, 0);
             }
 
             public override void OnClose()
@@ -672,7 +684,8 @@ namespace MicroGraph.Editor
                 value = selected;
             };
             SearchPopupContent popupContent = getContent?.Invoke() ?? default(SearchPopupContent);
-            windowContent.Show(m_VisualInput.worldBound, value, popupContent.Items);
+            Vector2 scale = m_VisualInput.worldTransform.lossyScale;
+            windowContent.Show(m_VisualInput.worldBound, scale, value, popupContent.Items);
         }
 
         public override void SetValueWithoutNotify(string newValue)

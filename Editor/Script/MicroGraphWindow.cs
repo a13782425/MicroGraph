@@ -68,7 +68,7 @@ namespace MicroGraph.Editor
         internal static MicroGraphWindow OpenWindow()
         {
             MicroGraphWindow panel = m_getWindow() ?? CreateWindow<MicroGraphWindow>();
-            panel.titleContent = new GUIContent("微图");
+            panel.titleContent = new GUIContent("微图 - \"未选择\"");
             panel.minSize = MicroGraphUtils.MIN_SIZE;
             panel.Focus();
             return panel;
@@ -159,6 +159,7 @@ namespace MicroGraph.Editor
                 {
                     if (graphView != null)
                         graphView.Exit();
+                    this.titleContent = new GUIContent($"微图 - [ {this.operateModel.editorInfo.Title} ]");
                     //删除没有的节点
                     this.operateModel.microGraph.Nodes.RemoveAll(n => n == null);
                     this.operateModel.microGraph.Initialize();

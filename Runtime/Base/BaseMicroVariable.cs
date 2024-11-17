@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MicroGraph.Runtime
@@ -16,6 +15,12 @@ namespace MicroGraph.Runtime
         /// 变量名
         /// </summary>
         public string Name { get => _name; set => _name = value; }
+        private BaseMicroGraph _microGraph;
+        /// <summary>
+        /// 微图
+        /// </summary>
+        public BaseMicroGraph MicroGraph { get => _microGraph; internal set => _microGraph = value; }
+
         /// <summary>
         /// 获取变量的值
         /// </summary>
@@ -25,7 +30,42 @@ namespace MicroGraph.Runtime
         /// 设置变量的值
         /// </summary>
         /// <param name="value"></param>
-        public virtual void SetValue(object value) { }
+        public virtual void SetValue(object value)
+        {
+#if MICRO_GRAPH_DEBUG
+            if (!MicroGraphDebugger.IsListener)
+                return;
+            DebuggerVarData varData = DebuggerVarData.Create();
+            varData.varName = _name;
+            varData.microGraphId = _microGraph?.OnlyId;
+            varData.runtimeName = _microGraph?.name;
+            Type valueType = GetValueType();
+            if (valueType == null)
+            {
+                varData.data = "null";
+            }
+            else if (valueType.IsClass)
+            {
+                if (value is UnityEngine.Object unityObj)
+                {
+                    varData.data = unityObj.name;
+                }
+                else if (value == null)
+                {
+                    varData.data = "null";
+                }
+                else
+                {
+                    varData.data = value.ToString();
+                }
+            }
+            else
+            {
+                varData.data = value.ToString();
+            }
+            MicroGraphDebugger.AddGraphVarData(varData);
+#endif
+        }
         /// <summary>
         /// 是否存在默认值
         /// </summary>
@@ -42,9 +82,10 @@ namespace MicroGraph.Runtime
         public virtual string GetDisplayName() => this.GetValueType()?.Name;
         public virtual IMicroGraphClone DeepCopy(IMicroGraphClone target)
         {
-            BaseMicroVariable var = (BaseMicroVariable)target;
-            var._name = this._name;
-            return var;
+            BaseMicroVariable variable = (BaseMicroVariable)target;
+            variable.MicroGraph = MicroGraph;
+            variable._name = this._name;
+            return variable;
         }
 
         public virtual IMicroGraphClone DeepClone() => (IMicroGraphClone)this.MemberwiseClone();
@@ -58,11 +99,26 @@ namespace MicroGraph.Runtime
     {
         [SerializeField]
         protected T _value;
-        public virtual T value { get => _value; set => _value = value; }
+        public virtual T value
+        {
+            get => _value;
+            set
+            {
+                _value = value;
+#if MICRO_GRAPH_DEBUG
+                base.SetValue(value);
+#endif
+            }
+        }
         public override object GetValue() => value;
-        public void SetValue(T value) => _value = value;
-        public override void SetValue(object value) => _value = (T)value;
-
+        public void SetValue(T value) => this.value = value;
+        public override void SetValue(object value)
+        {
+            _value = (T)value;
+#if MICRO_GRAPH_DEBUG
+            base.SetValue(value);
+#endif
+        }
         public override Type GetValueType() => typeof(T);
     }
 }

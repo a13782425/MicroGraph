@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static MicroGraph.Editor.BaseMicroGraphView;
 using static MicroGraph.Editor.MicroGraphUtils;
 
 namespace MicroGraph.Editor
@@ -36,11 +37,31 @@ namespace MicroGraph.Editor
         /// 最后的位置
         /// </summary>
         internal Vector2 LastPos { get; set; }
+        /// <summary>
+        /// 注释
+        /// </summary>
+        private Label _commentLabel;
 
         private EditorLabelElement _titleLabel;
 
-        private InternalNodeView _internalNodeView;
+        private VisualElement _nodeBorder;
+        public VisualElement NodeBorder
+        {
+            get
+            {
+                if (_nodeBorder == null)
+                    _nodeBorder = view.Q("node-border");
+                return _nodeBorder;
+            }
+        }
 
+        private InternalNodeView _internalNodeView;
+#if MICRO_GRAPH_DEBUG
+        /// <summary>
+        /// 调试视图
+        /// </summary>
+        private MicroVariableDebuggerView _debuggerView;
+#endif
         public MicroVariableNodeView()
         {
             _internalNodeView = new InternalNodeView(this);
@@ -55,23 +76,36 @@ namespace MicroGraph.Editor
             this.owner = graphView;
             this.editorInfo = editorInfo;
             this.Target = editorInfo.EditorInfo.Target;
+            _commentLabel = new Label(editorInfo.EditorInfo.Comment);
+            _commentLabel.AddToClassList("comment_label");
+            _commentLabel.tooltip = editorInfo.EditorInfo.Comment;
             m_initNodeView();
             this.view.SetPosition(new Rect(editorInfo.Pos, Vector2.one));
             this.LastPos = editorInfo.Pos;
             this.Title = this.Target.Name;
             this.owner.listener.AddListener(MicroGraphEventIds.VAR_MODIFY, m_varModify);
+            this.view.Add(_commentLabel);
+#if MICRO_GRAPH_DEBUG
+            //_debuggerView = new MicroVariableDebuggerView();
+            //_debuggerView.Initialize(this);
+            graphView.listener.AddListener(MicroGraphEventIds.DEBUGGER_LOCAL_GRAPH_STATE_CHANGED, m_onGraphDebuggerChanged);
+#endif
         }
 
         internal void OnDestory()
         {
             this.owner.listener.RemoveListener(MicroGraphEventIds.VAR_MODIFY, m_varModify);
+#if MICRO_GRAPH_DEBUG
+            owner.listener.RemoveListener(MicroGraphEventIds.DEBUGGER_LOCAL_GRAPH_STATE_CHANGED, m_onGraphDebuggerChanged);
+            _debuggerView?.Disable();
+#endif
         }
     }
 
     //private
     partial class MicroVariableNodeView
     {
-        internal void m_initNodeView()
+        private void m_initNodeView()
         {
             this._internalNodeView.AddToClassList("internal_variable_node");
             //移除右上角折叠按钮
@@ -91,6 +125,7 @@ namespace MicroGraph.Editor
                 this._internalNodeView.inputContainer.Add(Input);
                 Input.type = this.Target.GetValueType();
                 Input.view.portColor = MicroGraphUtils.GetColor(Input.type);
+                Input.key = this.Target.Name;
             }
             else
             {
@@ -99,6 +134,7 @@ namespace MicroGraph.Editor
             OutPut = new MicroPort(MicroPortType.BaseVarPort, Orientation.Horizontal, Direction.Output);
             this._internalNodeView.outputContainer.Add(OutPut);
             OutPut.type = this.Target.GetValueType();
+            OutPut.key = this.Target.Name;
             OutPut.view.portColor = MicroGraphUtils.GetColor(OutPut.type);
             OutPut.onCanLink += onPortCanConnect;
             var contents = this._internalNodeView.Q("contents");
@@ -113,6 +149,11 @@ namespace MicroGraph.Editor
                 {
                     this.editorInfo.Name = varModify.var.Name;
                     this.Title = this.editorInfo.Name;
+                    if (editorInfo.EditorInfo.CanAssign)
+                        this.Input.key = this.editorInfo.Name;
+                    this.OutPut.key = this.editorInfo.Name;
+                    this._commentLabel.text = this.editorInfo.EditorInfo.Comment;
+                    this._commentLabel.tooltip = this.editorInfo.EditorInfo.Comment;
                 }
                 return true;
             }
@@ -146,7 +187,6 @@ namespace MicroGraph.Editor
                 Title = this.editorInfo.Name;
             }
         }
-
         private bool onPortCanConnect(MicroPort mine, MicroPort target)
         {
             if ((target.portType & CAN_LINK_PORT_TYPE) > MicroPortType.None)
@@ -204,6 +244,32 @@ namespace MicroGraph.Editor
             }
             return result;
         }
+#if MICRO_GRAPH_DEBUG
+        private bool m_onGraphDebuggerChanged(object args)
+        {
+            if (owner.DebuggerState == BaseMicroGraphView.MicroGraphDebuggerState.None)
+            {
+                if (_debuggerView != null)
+                {
+                    _debuggerView.Disable();
+                }
+                return true;
+            }
+            else
+            {
+                if (_debuggerView == null)
+                {
+                    _debuggerView = new MicroVariableDebuggerView();
+                    _debuggerView.Initialize(this);
+                }
+                else
+                {
+                    _debuggerView.Initialize(this);
+                }
+            }
+            return true;
+        }
+#endif
     }
     //Class
     partial class MicroVariableNodeView
@@ -225,6 +291,10 @@ namespace MicroGraph.Editor
             }
             public override void SetPosition(Rect newPos)
             {
+#if MICRO_GRAPH_DEBUG
+                if (nodeView.owner.DebuggerState == MicroGraphDebuggerState.Attach)
+                    return;
+#endif
                 base.SetPosition(newPos);
                 nodeView.editorInfo.Pos = newPos.position;
             }

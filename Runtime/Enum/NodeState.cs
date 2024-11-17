@@ -3,7 +3,7 @@
     /// <summary>
     /// 节点的状态
     /// </summary>
-    public enum NodeState
+    public enum NodeState : byte
     {
         None,
         /// <summary>
@@ -15,7 +15,7 @@
         /// </summary>
         Running,
         /// <summary>
-        /// 跳过
+        /// 跳过，会跳过该节点的后续节点
         /// </summary>
         Skip,
         /// <summary>
@@ -26,5 +26,9 @@
         /// 运行失败
         /// </summary>
         Failed,
+        /// <summary>
+        /// 退出
+        /// </summary>
+        Exit,
     }
 }

@@ -101,7 +101,20 @@ namespace MicroGraph.Editor
                 return;
             }
             _resultList.AddRange(_owner.editorInfo.Nodes
-                .Where(node => node.Title.Contains(evt.newValue, StringComparison.OrdinalIgnoreCase))
+                .Where(node =>
+                {
+                    var nodeView = _owner.GetElement<BaseMicroNodeView.InternalNodeView>(node.NodeId);
+                    foreach (var element in nodeView.nodeView.nodefieldElements)
+                    {
+                        if (element.ToValueString().Contains(evt.newValue, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                    if (node.NodeId.ToString() == evt.newValue)
+                        return true;
+                    return node.Title.Contains(evt.newValue, StringComparison.OrdinalIgnoreCase);
+                })
                 .Select(a => a.NodeId));
             _resultList.AddRange(_owner.editorInfo.VariableNodes
                 .Where(node => node.Name.Contains(evt.newValue, StringComparison.OrdinalIgnoreCase))

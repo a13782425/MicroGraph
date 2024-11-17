@@ -1,10 +1,21 @@
 .microGroup{
+	
 }
-/* .microGroup:selected{
-	border-color:rgba(0.267,0.753,1,1);
-} */
+.microGroup > .mainContainer{
+	min-width: 128px;
+	min-height: 96px;
+}
+.microGroup > .mainContainer > #centralContainer{
+	width: 100%;
+	height: 100%;
+}
+.microGroup > .mainContainer > #centralContainer > #contentContainerPlaceholder{
+	min-height: 96px;
+}
+
 .microGroup > .mainContainer > #headerContainer{
 	flex-direction : row;
+	height: 32px;
 	border-bottom-width: var(--micrograph-metrics-default-border);
 	border-top-left-radius: var(--micrograph-metrics-default-border_radius);
 	border-top-right-radius: var(--micrograph-metrics-default-border_radius);
@@ -19,8 +30,81 @@
 	color: var(--micrograph-colors-default-text);
 	-unity-text-align: middle-center;
 	text-shadow: 1px 1px black;
+	height: 100%;
 }
 .microGroup_palette{
 	width: 48px;
-	align-items: center;
+	position: absolute;
+	left: auto;
+	right: 0px;
+	top: auto;
+	bottom: auto;
 }
+
+.microGroup_packageicon{
+	width: 18px;
+	height: 18px;
+	margin: 3px;
+	background-image: resource("__MicroGraph/Texture/Common/package");
+}
+
+.microGroup_packagecontainer{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+/* 	justify-content: center;
+	align-items: center; */
+}
+.microGroup_packagesymbol{
+	background-image: resource("__MicroGraph/Texture/Common/package");
+	-unity-background-image-tint-color: rgba(255,255,255,0.3);
+	position: absolute;
+	left: auto;
+	right: 2px;
+	top: auto;
+	bottom: 2px;
+	width: 36px;
+	height: 36px;
+
+}
+.microGroup_packagetooltip{
+	position: absolute;
+	color: red;
+	font-size: 16px;
+	-unity-text-align: middle-right;
+	-unity-font-style: bold;
+	margin-right: 2px;
+	left: auto;
+	right: 38px;
+	top: auto;
+	bottom: 8px;
+	width: 65%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.microGroup_packagecontainer > .microGroup_packageendport{
+	--port-color: #0080FF;
+	position: absolute;
+	left: auto;
+	right: 0;
+}
+.microGroup_packagecontainer > .microGroup_packagestartport{
+	--port-color: #0080FF;
+	position: absolute;
+}
+
+.microGroup_packagecontainer > .port.microGroup_packagestartport > #type{
+	-unity-text-align: middle-left;
+	-unity-font-style: bold;
+	height: 18px;
+	width: 36px;
+	font-size: var(--micrograph-metrics-default-font_title_size);
+}
+.microGroup_packagecontainer > .port.microGroup_packageendport > #type{
+	-unity-text-align: middle-right;
+	-unity-font-style: bold;
+	height: 18px;
+	width: 36px;
+	font-size: var(--micrograph-metrics-default-font_title_size);
+}
+

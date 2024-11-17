@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static MicroGraph.Editor.BaseMicroGraphView;
 using static MicroGraph.Editor.MicroGraphUtils;
 
 namespace MicroGraph.Editor
@@ -70,6 +71,30 @@ namespace MicroGraph.Editor
         /// 出端口
         /// </summary>
         public MicroPort OutPut { get; private set; }
+        private NodeTitleColorType _titleColor = NodeTitleColorType.Default;
+        public NodeTitleColorType TitleColor
+        {
+            get => _titleColor;
+            set
+            {
+                int v = (int)value;
+                if (v < 0)
+                {
+                    _titleColor = category.NodeTitleColor;
+                    editorInfo.TitleColor = -1;
+                }
+                else
+                {
+                    _titleColor = value;
+                    editorInfo.TitleColor = v;
+                }
+                VariantColor color = m_getVariantColor(_titleColor);
+                titleContainer.style.backgroundColor = color.s900.Fade(0.8f);
+                titleContainer.style.borderTopColor = color.s300.Fade(0.8f);
+                titleContainer.style.borderRightColor = color.s300.Fade(0.8f);
+                titleContainer.style.borderLeftColor = color.s300.Fade(0.8f);
+            }
+        }
         /// <summary>
         /// 节点类型信息
         /// </summary>
@@ -104,9 +129,20 @@ namespace MicroGraph.Editor
         /// 微节点布局
         /// </summary>
         private MicroNodeLayout _nodeLayer;
-
+        /// <summary>
+        /// 节点类型Icon
+        /// </summary>
         private Image _nodeIcon;
+        /// <summary>
+        /// 加锁按钮
+        /// </summary>
         private Button _lockButton;
+#if MICRO_GRAPH_DEBUG
+        /// <summary>
+        /// 调试视图
+        /// </summary>
+        private MicroNodeDebuggerView _debuggerView;
+#endif
 
         public BaseMicroNodeView()
         {
@@ -151,16 +187,13 @@ namespace MicroGraph.Editor
         public void Add(VisualElement child)
         {
             if (child is MicroPort.InternalPort port)
-                if (!microPorts.Contains(port.microPort))
-                    microPorts.Add(port.microPort);
-
+                AddMicroPort(port);
             contentContainer.Add(child);
         }
         public void Add(INodeFieldElement child)
         {
             if (child.Port != null)
-                if (!microPorts.Contains(child.Port))
-                    microPorts.Add(child.Port);
+                AddMicroPort(child.Port);
             nodefieldElements.Add(child);
             contentContainer.Add(child.Root);
         }
@@ -188,16 +221,23 @@ namespace MicroGraph.Editor
         {
             _internalNodeView.AddManipulator(manipulator);
         }
-
+        /// <summary>
+        /// 画指定字段名的UI
+        /// </summary>
+        /// <param name="fieldName"></param>
         public void DrawUI(string fieldName)
         {
             if (!category.GetNodeFieldInfos().TryGetValue(fieldName, out FieldInfo fieldInfo))
             {
-                Debug.LogWarning($"字段{fieldName},没有找到");
+                Debug.LogWarning($"字段:[{fieldName}], 没有找到");
                 return;
             }
             DrawUI(fieldInfo);
         }
+        /// <summary>
+        /// 画指定字段的UI
+        /// </summary>
+        /// <param name="fieldInfo"></param>
         public void DrawUI(FieldInfo fieldInfo)
         {
             _nextDrawElements.Clear();
@@ -358,7 +398,8 @@ namespace MicroGraph.Editor
         }
 
         /// <summary>
-        /// 添加一个变量线
+        /// 添加一个变量线数据
+        /// <para>不会添加连线，只会添加数据</para>
         /// </summary>
         /// <param name="port"></param>
         /// <param name="nodeView"></param>
@@ -384,7 +425,8 @@ namespace MicroGraph.Editor
         }
 
         /// <summary>
-        /// 删除一个变量线
+        /// 删除一个变量线数据
+        /// <para>不会删除连线，只会删除数据</para>
         /// </summary>
         /// <param name="port"></param>
         /// <param name="nodeView"></param>
@@ -414,12 +456,38 @@ namespace MicroGraph.Editor
             });
         }
         /// <summary>
-        /// 获取一个端口
+        /// 手动添加一个端口
         /// </summary>
+        public void AddMicroPort(MicroPort port)
+        {
+            if (!microPorts.Contains(port))
+                microPorts.Add(port);
+        }
+        /// <summary>
+        /// 手动获取一个端口
+        /// </summary>
+        /// <param name="key">端口的唯一Key</param>
+        /// <param name="isInput">是否为输入端口</param>
         /// <returns></returns>
         public virtual MicroPort GetMicroPort(string key, bool isInput = false)
         {
             return _microPorts.FirstOrDefault(a => a.key == key && a.IsInput == isInput);
+        }
+        /// <summary>
+        /// 手动删除一个端口
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool RemoveMicroPort(string key, bool isInput = false)
+        {
+            return _microPorts.RemoveAll(a => a.key == key && a.IsInput == isInput) > 0;
+        }
+        /// <summary>
+        /// 手动删除一个端口
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool RemoveMicroPort(MicroPort port)
+        {
+            return _microPorts.Remove(port);
         }
         /// <summary>
         /// 获取所有父节点
@@ -498,12 +566,32 @@ namespace MicroGraph.Editor
                 this.view.outputContainer.RemoveFromHierarchy();
             _lockButton.AddToClassList(editorInfo.IsLock ? "node_state_lock" : "node_state_unlock");
             _nodeIcon.AddToClassList("node_type_" + category.NodeType.ToString().ToLower());
+            _nodeIcon.sprite = Resources.Load<Sprite>("__MicroGraph/Texture/Node/node_" + category.NodeType.ToString().ToLower());
             this.contentContainer.SetEnabled(!editorInfo.IsLock);
+            if (nodeCategory.MinWidth > 0)
+                this.view.style.minWidth = nodeCategory.MinWidth;
             onInit();
             this.DrawUI();
             this.view.SetPosition(new Rect(editorInfo.Pos, Vector2.one));
             this.LastPos = editorInfo.Pos;
+            this.TitleColor = (NodeTitleColorType)editorInfo.TitleColor;
+#if MICRO_GRAPH_DEBUG
+            graphView.listener.AddListener(MicroGraphEventIds.DEBUGGER_LOCAL_GRAPH_STATE_CHANGED, m_onGraphDebuggerChanged);
+#endif
         }
+        /// <summary>
+        /// 内部退出
+        /// </summary>
+        internal void InternalExit()
+        {
+#if MICRO_GRAPH_DEBUG
+            owner.listener.RemoveListener(MicroGraphEventIds.DEBUGGER_LOCAL_GRAPH_STATE_CHANGED, m_onGraphDebuggerChanged);
+            _debuggerView?.Disable();
+#endif
+            onExit();
+
+        }
+
     }
     //protected 方法
     partial class BaseMicroNodeView
@@ -511,7 +599,8 @@ namespace MicroGraph.Editor
         protected virtual void buildContextualMenu(ContextualMenuPopulateEvent evt)
         {
             //evt.menu.AppendAction($"创建{title}", m_createMicroGraph, DropdownMenuAction.AlwaysEnabled);
-            if (this.owner.View.selection.OfType<Node>().Count() > 1)
+            int selectCount = this.owner.View.selection.OfType<Node>().Count();
+            if (selectCount > 1)
             {
                 evt.menu.AppendAction("添加模板", (e) => this.owner.AddGraphTemplate(), DropdownMenuAction.AlwaysEnabled);
                 evt.StopPropagation();
@@ -524,9 +613,25 @@ namespace MicroGraph.Editor
             evt.menu.AppendAction("查看节点代码", onOpenNodeScript);
             evt.menu.AppendAction("查看界面代码", onOpenNodeViewScript, this.GetType() == typeof(BaseMicroNodeView) ? DropdownMenuAction.Status.Disabled : DropdownMenuAction.Status.Normal);
             evt.menu.AppendSeparator();
-            if (this.owner.View.selection.OfType<Node>().Count() > 1)
+            if (selectCount > 1)
             {
                 evt.menu.AppendAction("添加模板", (e) => this.owner.AddGraphTemplate(), DropdownMenuAction.AlwaysEnabled);
+                evt.menu.AppendSeparator();
+            }
+            else
+            {
+                string msg = editorInfo.TitleColor < 0 ? "默认颜色" : ((NodeTitleColorType)editorInfo.TitleColor).ToString();
+                evt.menu.AppendAction($"当前颜色: {msg}", null, DropdownMenuAction.AlwaysEnabled);
+                evt.menu.AppendAction("修改标题颜色/默认颜色/当前节点", (a) => TitleColor = (NodeTitleColorType)a.userData, DropdownMenuAction.AlwaysEnabled, (NodeTitleColorType)(-1));
+                evt.menu.AppendAction("修改标题颜色/默认颜色/同类型节点", a => m_changeAllTitleColor((NodeTitleColorType)a.userData), DropdownMenuAction.AlwaysEnabled, (NodeTitleColorType)(-1));
+                foreach (var item in nodeColorTypes)
+                {
+                    string menu = "修改标题颜色/";
+                    menu += item.ToString();
+                    evt.menu.AppendAction(menu + "/当前节点", (a) => TitleColor = (NodeTitleColorType)a.userData, DropdownMenuAction.AlwaysEnabled, item);
+                    evt.menu.AppendAction(menu + "/同类型节点", a => m_changeAllTitleColor((NodeTitleColorType)a.userData), DropdownMenuAction.AlwaysEnabled, item);
+                }
+
                 evt.menu.AppendSeparator();
             }
             evt.menu.AppendAction("删除", onDeleteNodeView, this.owner.CategoryModel.IsUniqueNode(this.Target.GetType()) ? DropdownMenuAction.Status.Disabled : DropdownMenuAction.Status.Normal);
@@ -539,26 +644,25 @@ namespace MicroGraph.Editor
         /// </summary>
         protected virtual void onInit() { }
         /// <summary>
-        /// 显示
+        /// 退出
         /// </summary>
-        protected virtual void onShow() { }
-        /// <summary>
-        /// 隐藏
-        /// </summary>
-        protected virtual void onHide() { }
+        protected virtual void onExit() { }
         /// <summary>
         /// 出端口是否可以连接
         /// </summary>
         /// <param name="arg1"></param>
         /// <param name="arg2"></param>
         /// <returns></returns>        
-        protected virtual bool onBasePortCanConnect(MicroPort outPut, MicroPort target)
+        protected virtual bool onBasePortCanConnect(MicroPort mine, MicroPort target)
         {
-            if (target.portType == MicroPortType.BaseNodePort)
-            {
+            MicroGroupView groupView = this.view.GetContainingScope() as MicroGroupView;
+            if (groupView == null || !groupView.editorInfo.IsPackage)
+                return target.portType == MicroPortType.BaseNodePort;
+            if (target.portType == MicroPortType.PackagePort)
                 return true;
-            }
-            return false;
+            if (target.view.node == null)
+                return false;
+            return target.view.node.GetContainingScope() == groupView;
         }
 
         /// <summary>
@@ -576,7 +680,6 @@ namespace MicroGraph.Editor
                 default:
                     break;
             }
-
         }
 
         /// <summary>
@@ -687,6 +790,187 @@ namespace MicroGraph.Editor
     //private
     partial class BaseMicroNodeView
     {
+        private readonly static Color s_defaultColor = new Color(0.247f, 0.247f, 0.247f, 0.804f);
+        private readonly static VariantColor s_defaultVariantColor = new VariantColor(s_defaultColor);
+
+        protected readonly static List<NodeTitleColorType> nodeColorTypes = new List<NodeTitleColorType>
+        {
+            NodeTitleColorType.Default,
+            NodeTitleColorType.Slate,
+            NodeTitleColorType.Gray,
+            NodeTitleColorType.Zinc,
+            NodeTitleColorType.Neutral,
+            NodeTitleColorType.Stone,
+            NodeTitleColorType.Red,
+            NodeTitleColorType.Orange,
+            NodeTitleColorType.Amber,
+            NodeTitleColorType.Yellow,
+            NodeTitleColorType.Lime,
+            NodeTitleColorType.Green,
+            NodeTitleColorType.Emerald,
+            NodeTitleColorType.Teal,
+            NodeTitleColorType.Cyan,
+            NodeTitleColorType.Sky,
+            NodeTitleColorType.Blue,
+            NodeTitleColorType.Indigo,
+            NodeTitleColorType.Violet,
+            NodeTitleColorType.Purple,
+            NodeTitleColorType.Fuchsia,
+            NodeTitleColorType.Pink,
+            NodeTitleColorType.Rose
+        };
+
+        /// <summary>
+        /// 获取虚拟颜色
+        /// </summary>
+        /// <param name="colorType"></param>
+        /// <returns></returns>
+        private VariantColor m_getVariantColor(NodeTitleColorType colorType)
+        {
+            switch (colorType)
+            {
+                case NodeTitleColorType.Default:
+                    return s_defaultVariantColor;
+                case NodeTitleColorType.Slate:
+                    return TailwindPalette.Slate;
+                case NodeTitleColorType.Gray:
+                    return TailwindPalette.Gray;
+                case NodeTitleColorType.Zinc:
+                    return TailwindPalette.Zinc;
+                case NodeTitleColorType.Neutral:
+                    return TailwindPalette.Neutral;
+                case NodeTitleColorType.Stone:
+                    return TailwindPalette.Stone;
+                case NodeTitleColorType.Red:
+                    return TailwindPalette.Red;
+                case NodeTitleColorType.Orange:
+                    return TailwindPalette.Orange;
+                case NodeTitleColorType.Amber:
+                    return TailwindPalette.Amber;
+                case NodeTitleColorType.Yellow:
+                    return TailwindPalette.Yellow;
+                case NodeTitleColorType.Lime:
+                    return TailwindPalette.Lime;
+                case NodeTitleColorType.Green:
+                    return TailwindPalette.Green;
+                case NodeTitleColorType.Emerald:
+                    return TailwindPalette.Emerald;
+                case NodeTitleColorType.Teal:
+                    return TailwindPalette.Teal;
+                case NodeTitleColorType.Cyan:
+                    return TailwindPalette.Cyan;
+                case NodeTitleColorType.Sky:
+                    return TailwindPalette.Sky;
+                case NodeTitleColorType.Blue:
+                    return TailwindPalette.Blue;
+                case NodeTitleColorType.Indigo:
+                    return TailwindPalette.Indigo;
+                case NodeTitleColorType.Violet:
+                    return TailwindPalette.Violet;
+                case NodeTitleColorType.Purple:
+                    return TailwindPalette.Purple;
+                case NodeTitleColorType.Fuchsia:
+                    return TailwindPalette.Fuchsia;
+                case NodeTitleColorType.Pink:
+                    return TailwindPalette.Pink;
+                case NodeTitleColorType.Rose:
+                    return TailwindPalette.Rose;
+            }
+            return EditorPalette.VariantSurfaceColorFixed;
+        }
+
+        /// <summary>
+        /// 获取具体颜色
+        /// </summary>
+        /// <param name="colorType"></param>
+        /// <returns></returns>
+        private Color m_getColor(NodeTitleColorType colorType)
+        {
+            switch (colorType)
+            {
+                case NodeTitleColorType.Default:
+                    return s_defaultVariantColor.s500;
+                case NodeTitleColorType.Slate:
+                    return TailwindPalette.Slate.s500;
+                case NodeTitleColorType.Gray:
+                    return TailwindPalette.Gray.s500;
+                case NodeTitleColorType.Zinc:
+                    return TailwindPalette.Zinc.s500;
+                case NodeTitleColorType.Neutral:
+                    return TailwindPalette.Neutral.s500;
+                case NodeTitleColorType.Stone:
+                    return TailwindPalette.Stone.s500;
+                case NodeTitleColorType.Red:
+                    return TailwindPalette.Red.s500;
+                case NodeTitleColorType.Orange:
+                    return TailwindPalette.Orange.s500;
+                case NodeTitleColorType.Amber:
+                    return TailwindPalette.Amber.s500;
+                case NodeTitleColorType.Yellow:
+                    return TailwindPalette.Yellow.s500;
+                case NodeTitleColorType.Lime:
+                    return TailwindPalette.Lime.s500;
+                case NodeTitleColorType.Green:
+                    return TailwindPalette.Green.s500;
+                case NodeTitleColorType.Emerald:
+                    return TailwindPalette.Emerald.s500;
+                case NodeTitleColorType.Teal:
+                    return TailwindPalette.Teal.s500;
+                case NodeTitleColorType.Cyan:
+                    return TailwindPalette.Cyan.s500;
+                case NodeTitleColorType.Sky:
+                    return TailwindPalette.Sky.s500;
+                case NodeTitleColorType.Blue:
+                    return TailwindPalette.Blue.s500;
+                case NodeTitleColorType.Indigo:
+                    return TailwindPalette.Indigo.s500;
+                case NodeTitleColorType.Violet:
+                    return TailwindPalette.Violet.s500;
+                case NodeTitleColorType.Purple:
+                    return TailwindPalette.Purple.s500;
+                case NodeTitleColorType.Fuchsia:
+                    return TailwindPalette.Fuchsia.s500;
+                case NodeTitleColorType.Pink:
+                    return TailwindPalette.Pink.s500;
+                case NodeTitleColorType.Rose:
+                    return TailwindPalette.Rose.s500;
+            }
+            return EditorPalette.BackgroundColor;
+        }
+
+        /// <summary>
+        /// 修改当前类型节点标题颜色
+        /// </summary>
+        /// <param name="action"></param>
+        private void m_changeAllTitleColor(NodeTitleColorType colorType)
+        {
+            foreach (var item in owner.View.nodes.OfType<BaseMicroNodeView>())
+            {
+                if (item.Target.GetType() == this.Target.GetType())
+                    item.TitleColor = colorType;
+            }
+        }
+
+#if MICRO_GRAPH_DEBUG
+        private bool m_onGraphDebuggerChanged(object args)
+        {
+            if (owner.DebuggerState == BaseMicroGraphView.MicroGraphDebuggerState.None)
+            {
+                if (_debuggerView != null)
+                {
+                    _debuggerView.Disable();
+                }
+                return true;
+            }
+            else
+            {
+                if (_debuggerView == null)
+                    _debuggerView = new MicroNodeDebuggerView();
+                _debuggerView.Initialize(this);
+            }
+            return true;
+        }
+#endif
     }
     //Class
     partial class BaseMicroNodeView
@@ -709,6 +993,10 @@ namespace MicroGraph.Editor
             {
                 if (nodeView.editorInfo.IsLock)
                     return;
+#if MICRO_GRAPH_DEBUG
+                if (nodeView.owner.DebuggerState == MicroGraphDebuggerState.Attach)
+                    return;
+#endif
 
                 base.SetPosition(newPos);
                 nodeView.editorInfo.Pos = newPos.position;

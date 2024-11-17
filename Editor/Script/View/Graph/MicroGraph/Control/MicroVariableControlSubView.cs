@@ -11,8 +11,12 @@ namespace MicroGraph.Editor
     /// <summary>
     /// 微图变量面板
     /// </summary>
+    [MicroGraphOrder(int.MinValue)]
     internal sealed class MicroVariableControlSubView : Blackboard, IMicroSubControl
     {
+        public VisualElement Panel => this;
+        public const int VARIABLE_CONTROL_ORDER = int.MinValue;
+        public string Name => "变量信息";
         private const string STYLE_PATH = "Uss/MicroGraph/Control/MicroVariableControlSubView";
         private BaseMicroGraphView _owner;
         private MicroVariableRowView _lastSelectVar;

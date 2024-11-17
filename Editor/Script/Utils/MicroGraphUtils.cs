@@ -32,7 +32,6 @@ namespace MicroGraph.Editor
         public readonly static string EDITOR_PATH_ROOT;
         public readonly static string EDITOR_RESOURCE_PATH = "__MicroGraph";
         public readonly static string CONFIG_PATH_ROOT = "../Library/MicroGraph";
-
         /// <summary>
         /// 通知时间
         /// </summary>
@@ -50,6 +49,11 @@ namespace MicroGraph.Editor
         /// 微图编辑器下的配置
         /// </summary>
         internal static MicroGraphGlobalConfigModel EditorConfig => _allEditorConfig;
+
+        /// <summary>
+        /// update
+        /// </summary>
+        internal static event Action onUpdate;
 
         private static Font _currentFont = null;
         /// <summary>
@@ -126,10 +130,11 @@ namespace MicroGraph.Editor
             }
             _allEditorConfig.OverviewConfig.Initialize();
             RefreshFont();
+            EditorApplication.playModeStateChanged -= s_onPlayModeStateChanged;
             EditorApplication.playModeStateChanged += s_onPlayModeStateChanged;
+            EditorApplication.update -= s_onUpdate;
+            EditorApplication.update += s_onUpdate;
         }
-
-
     }
     //公共方法
     partial class MicroGraphUtils
@@ -431,6 +436,10 @@ namespace MicroGraph.Editor
                 default:
                     break;
             }
+        }
+        private static void s_onUpdate()
+        {
+            onUpdate?.Invoke();
         }
         internal static void RefreshFont()
         {

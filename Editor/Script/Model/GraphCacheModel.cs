@@ -135,14 +135,22 @@ namespace MicroGraph.Editor
         /// </summary>
         public bool IsHorizontal { get; internal set; }
         /// <summary>
-        /// 是否启用
+        /// 最小宽度
         /// </summary>
-        public bool IsEnable { get; internal set; }
-
+        public int MinWidth { get; internal set; }
+        /// <summary>
+        /// 节点启用状态
+        /// </summary>
+        public MicroNodeEnableState EnableState { get; internal set; }
+        /// <summary>
+        /// 标题颜色
+        /// </summary>
+        public NodeTitleColorType NodeTitleColor { get; internal set; }
         /// <summary>
         /// 节点类型
         /// </summary>
         public MicroNodeType NodeType { get; internal set; }
+
 
 
         private bool _isReady = false;

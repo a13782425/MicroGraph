@@ -17,8 +17,9 @@ namespace MicroGraph.Runtime
         public string GraphName { get; private set; }
         /// <summary>
         /// 当前微图的颜色
+        /// <para>示例#090909</para>
         /// </summary>
-        public Color? Color { get; set; }
+        public string Color { get; set; }
 
         public MicroGraphAttribute(string str)
         {

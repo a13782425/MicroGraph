@@ -289,6 +289,8 @@ namespace MicroGraph.Editor
 
             foreach (var item in types)
             {
+                if (item.EnableState == MicroNodeEnableState.Exclude)
+                    continue;
                 NodeTypeModel model = new NodeTypeModel();
                 model.nodeCategory = item;
                 nodeTypeModels.Add(model);
@@ -382,7 +384,7 @@ namespace MicroGraph.Editor
                 this.index = index;
                 this.model = model;
                 nameLabel.text = "节点名: " + model.nodeCategory.NodeFullName;
-                isEnableToggle.value = model.nodeCategory.IsEnable;
+                isEnableToggle.value = model.nodeCategory.EnableState == MicroNodeEnableState.Enabled;
                 countLabel.text = "使用量: " + model.useCount.ToString();
                 m_showGraphPath();
             }
@@ -448,8 +450,7 @@ namespace MicroGraph.Editor
                 BaseMicroGraph graph = MicroGraphUtils.GetMicroGraph(path);
                 if (graph == null)
                     return;
-
-                _curPopupWindow = MicroNodeInfoPopup.ShowNodeInfoPopup(this.window, graph, model.nodeCategory);
+                _curPopupWindow = MicroNodeInfoPopup.ShowNodeInfoPopup(this.window, graph, model.nodeCategory, label);
             }
             private void onLabelContextualMenu(ContextualMenuPopulateEvent evt)
             {

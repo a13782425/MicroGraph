@@ -3,6 +3,7 @@ using UnityEngine.UIElements;
 
 namespace MicroGraph.Editor
 {
+    [MicroGraphOrder(MicroVariableControlSubView.VARIABLE_CONTROL_ORDER + 400)]
     internal class MicroGraphControlSubView : VisualElement, IMicroSubControl
     {
         private BaseMicroGraphView _owner;
@@ -13,6 +14,9 @@ namespace MicroGraph.Editor
         private Label _modifyTimeLabel;
         private Label _pathLabel;
         private Button _locationButton;
+        public VisualElement Panel => this;
+        public string Name => "微图信息";
+
         public MicroGraphControlSubView(BaseMicroGraphView owner)
         {
             this._owner = owner;

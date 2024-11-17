@@ -1,3 +1,6 @@
+.internalNodeView > #selection-border {
+	border-width: 2px;
+}
 
 .time_label{
 	color: var(--micrograph-colors-default-text);

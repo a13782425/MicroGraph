@@ -23,7 +23,7 @@ namespace MicroGraph.Editor
         private const float kPortDetectionWidth = 10;
 
         private List<Port> m_CompatiblePorts;
-        private Dictionary<Node, List<Port>> compatiblePorts = new Dictionary<Node, List<Port>>();
+        private Dictionary<GraphElement, List<Port>> compatiblePorts = new Dictionary<GraphElement, List<Port>>();
         private Edge ghostEdge;
         private GraphView graphView;
         private static NodeAdapter nodeAdapter = new NodeAdapter();
@@ -87,9 +87,13 @@ namespace MicroGraph.Editor
 
             foreach (Port port in graphView.GetCompatiblePorts(draggedPort, nodeAdapter))
             {
-                compatiblePorts.TryGetValue(port.node, out var portList);
+                GraphElement graphElement = port.node;
+                if (graphElement == null)
+                    graphElement = port.GetFirstAncestorOfType<Group>();
+
+                compatiblePorts.TryGetValue(graphElement, out var portList);
                 if (portList == null)
-                    portList = compatiblePorts[port.node] = new List<Port>();
+                    portList = compatiblePorts[graphElement] = new List<Port>();
                 portList.Add(port);
             }
 
@@ -351,7 +355,7 @@ namespace MicroGraph.Editor
 
             return effectiveSpeed;
         }
-        private Rect GetPortBounds(Node node, int index, List<Port> portList)
+        private Rect GetPortBounds(GraphElement node, int index, List<Port> portList)
         {
             var port = portList[index];
             var bounds = port.worldBound;
@@ -405,14 +409,14 @@ namespace MicroGraph.Editor
 
             foreach (var kp in compatiblePorts)
             {
-                var node = kp.Key;
+                var element = kp.Key;
                 var portList = kp.Value;
 
                 // We know that the port in the list is top to bottom in term of layout
                 for (int i = 0; i < portList.Count; i++)
                 {
                     var port = portList[i];
-                    Rect bounds = GetPortBounds(node, i, portList);
+                    Rect bounds = GetPortBounds(element, i, portList);
 
                     float distance = Vector2.Distance(port.worldBound.position, mousePosition);
 

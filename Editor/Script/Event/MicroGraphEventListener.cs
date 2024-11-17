@@ -1,6 +1,9 @@
-﻿using System;
+﻿using MicroGraph.Runtime;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace MicroGraph.Editor
 {
@@ -175,7 +178,7 @@ namespace MicroGraph.Editor
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError(ex.Message);
+                        MicroGraphLogger.LogError(ex.Message);
                     }
                 }
                 _isExecute = false;
@@ -197,7 +200,6 @@ namespace MicroGraph.Editor
                     listener.EnqueueList(_waitDelList);
                     _waitDelList = null;
                 }
-
             }
         }
     }

@@ -239,12 +239,42 @@ namespace MicroGraph.Editor
         {
             if (sendCallback)
             {
+                Edge edge = null;
+                foreach (var item in disconnectPort.view.connections)
+                {
+                    if (this.IsInput)
+                    {
+                        if (item.input == this.view && item.output == disconnectPort.view)
+                        {
+                            edge = item;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (item.input == disconnectPort.view && item.output == this.view)
+                        {
+                            edge = item;
+                            break;
+                        }
+                    }
+                }
+
+                if (edge != null)
+                    this.view.Disconnect(edge);
                 this.onDisconnect?.Invoke(this, disconnectPort);
             }
         }
         private void m_disconnectEdge(Edge edge, bool sendCallback = true)
         {
-
+            if (sendCallback)
+            {
+                this.view.Disconnect(edge);
+                MicroPort disconnectPort = (InternalPort)edge.input;
+                if (this.IsInput)
+                    disconnectPort = (InternalPort)edge.output;
+                this.onDisconnect?.Invoke(this, disconnectPort);
+            }
         }
     }
     partial class MicroPort

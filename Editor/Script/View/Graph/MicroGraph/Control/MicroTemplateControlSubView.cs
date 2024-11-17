@@ -9,8 +9,11 @@ using UnityEngine.UIElements;
 
 namespace MicroGraph.Editor
 {
+    [MicroGraphOrder(MicroVariableControlSubView.VARIABLE_CONTROL_ORDER + 200)]
     internal class MicroTemplateControlSubView : VisualElement, IMicroSubControl
     {
+        public VisualElement Panel => this;
+        public string Name => "模板信息";
         private const string STYLE_PATH = "Uss/MicroGraph/Control/MicroTemplateControlSubView";
         private BaseMicroGraphView _owner;
         public BaseMicroGraphView owner => _owner;
@@ -205,7 +208,7 @@ namespace MicroGraph.Editor
             foreach (var node in item.Nodes)
             {
                 NodeCategoryModel nodeCategory = categoryModel.NodeCategories.FirstOrDefault(a => a.NodeClassType.FullName == node.ClassName);
-                if (nodeCategory == null || !nodeCategory.IsEnable)
+                if (nodeCategory == null || nodeCategory.EnableState != Runtime.MicroNodeEnableState.Enabled)
                 {
                     isWarning = true;
                     break;
@@ -361,7 +364,5 @@ namespace MicroGraph.Editor
                     _templateRect.yMax = max.y;
             }
         }
-
-
     }
 }

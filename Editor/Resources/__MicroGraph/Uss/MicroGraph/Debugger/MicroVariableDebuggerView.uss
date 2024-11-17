@@ -1,0 +1,21 @@
+.micro_debugger_var_view{
+	/* width: 128px; */
+	width: auto;
+	border-radius: 2px;	
+	background-color: var(--micrograph-colors-toolbar_button-background);
+	border-color: var(--micrograph-colors-helpbox-border);
+}
+.micro_debugger_var_container{
+	flex-shrink: 1;
+	height: 100%;
+}
+.micro_debugger_varinfo_label{
+	padding: 1px;
+	margin-left: 6px;
+	flex-grow: 1;
+	height: 100%;
+	-unity-font-style: italic;
+	-unity-text-align: middle-left;
+	color: var(--micrograph-colors-helpbox-text);
+    overflow: visible;
+}

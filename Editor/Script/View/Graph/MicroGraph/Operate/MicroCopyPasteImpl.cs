@@ -40,6 +40,42 @@ namespace MicroGraph.Editor
             return true;
         }
     }
+    [MicroGraphEditor(typeof(MicroPackageNodeView))]
+    internal sealed class MicroPackageNodeCopyPaste : IMicroGraphCopyPaste
+    {
+        private Vector2 copyPos;
+        private Type nodeType;
+        private int oldId;
+        private int packageId;
+
+        public void Copy(BaseMicroGraphView graphView, object target)
+        {
+            BaseMicroNodeView nodeView = (BaseMicroNodeView)target;
+            this.copyPos = nodeView.view.GetPosition().position;
+            this.nodeType = nodeView.Target.GetType();
+            this.oldId = nodeView.Target.OnlyId;
+            this.packageId = ((MicroPackageNode)nodeView.Target).PackageId;
+        }
+
+        public bool Paste(MicroCopyPasteOperateData copyOperateData)
+        {
+            bool isUnique = copyOperateData.view.CategoryModel.IsUniqueNode(nodeType);
+            if (isUnique)
+            {
+                if (copyOperateData.view.Target.Nodes.FirstOrDefault(a => a.GetType() == nodeType) != null)
+                {
+                    copyOperateData.view.owner.ShowNotification(new GUIContent("唯一节点不允许重复创建"), 2f);
+                    return false;
+                }
+            }
+
+            Vector2 offset = copyOperateData.centerPos - this.copyPos;
+            var node = copyOperateData.view.AddNode(this.nodeType, copyOperateData.mousePos - offset);
+            copyOperateData.oldMappingNewIdDic[this.oldId] = node.OnlyId;
+            ((MicroPackageNode)node).PackageId = this.packageId;
+            return true;
+        }
+    }
 
     [MicroGraphEditor(typeof(MicroVariableNodeView))]
     internal sealed class MicroVariableNodeCopyPaste : IMicroGraphCopyPaste
@@ -114,7 +150,7 @@ namespace MicroGraph.Editor
         {
             Vector2 offset = copyOperateData.centerPos - this.pos;
             MicroGroupEditorInfo group = new MicroGroupEditorInfo();
-            group.GroupId = copyOperateData.view.editorInfo.GetUniqueId();
+            group.GroupId = copyOperateData.view.editorInfo.GetNodeUniqueId();
             group.Pos = copyOperateData.mousePos - offset;
             group.Title = this.title;
             group.GroupColor = color;
@@ -156,7 +192,7 @@ namespace MicroGraph.Editor
         {
             Vector2 offset = copyOperateData.centerPos - this.pos;
             MicroStickyEditorInfo sticky = new MicroStickyEditorInfo();
-            sticky.NodeId = copyOperateData.view.editorInfo.GetUniqueId();
+            sticky.NodeId = copyOperateData.view.editorInfo.GetNodeUniqueId();
             sticky.Pos = copyOperateData.mousePos - offset;
             sticky.Theme = this.theme;
             sticky.FontSize = this.fontSize;

@@ -13,6 +13,11 @@ namespace MicroGraph.Runtime
         public string Title;
         [SerializeField]
         public bool IsLock;
+        /// <summary>
+        /// 节点颜色
+        /// </summary>
+        [SerializeField]
+        public int TitleColor = -1;
         [SerializeField]
         public Vector2 Pos = Vector2.zero;
         [NonSerialized]

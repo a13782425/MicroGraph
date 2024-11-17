@@ -1,0 +1,24 @@
+﻿.unity-base-field > .unity-base-field__label{
+	min-width: 64px;
+}
+.state_legend{
+	border-width: 1px;
+	border-color: var(--micrograph-colors-default-border);
+	padding-left: 6px;
+	padding-right: 6px;
+	flex-direction: row;
+	height: 32px;
+}
+.state_legend > .legend_bg{
+	width: 24px;
+	height: 24px;
+	align-self: center;
+}
+
+.state_legend > .legend_label{
+	-unity-font-style: bold;
+	font-size: var(--micrograph-metrics-default-font_title_size);
+	margin-left: 6px;
+	-unity-text-align: middle-left;
+	text-shadow: 1px 1px black;
+}

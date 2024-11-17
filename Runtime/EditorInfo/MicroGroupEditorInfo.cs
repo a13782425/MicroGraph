@@ -22,6 +22,11 @@ namespace MicroGraph.Runtime
         [SerializeField]
         public Color GroupColor = Color.white;
         /// <summary>
+        /// 是否是软件包
+        /// </summary>
+        [SerializeField]
+        public bool IsPackage = false;
+        /// <summary>
         /// 当前分组拥有的节点
         /// </summary>
         [SerializeField]

@@ -35,7 +35,7 @@ namespace MicroGraph.Editor
                     return;
                 }
             }
-            if (!nodeCategory.IsEnable)
+            if (nodeCategory.EnableState == MicroNodeEnableState.Disabled)
             {
                 operateData.view.owner.ShowNotification(new GUIContent($"节点:{nodeCategory.NodeName} 已不再使用"), 2f);
                 return;
@@ -123,7 +123,7 @@ namespace MicroGraph.Editor
             MicroStickySerializeModel model = data as MicroStickySerializeModel;
             Vector2 offset = operateData.centerPos - model.Pos;
             MicroStickyEditorInfo sticky = new MicroStickyEditorInfo();
-            sticky.NodeId = operateData.view.editorInfo.GetUniqueId();
+            sticky.NodeId = operateData.view.editorInfo.GetNodeUniqueId();
             sticky.Pos = operateData.mousePos - offset;
             sticky.Theme = model.Theme;
             sticky.FontSize = model.FontSize;
@@ -225,7 +225,7 @@ namespace MicroGraph.Editor
             MicroGroupSerializeModel model = data as MicroGroupSerializeModel;
             Vector2 offset = operateData.centerPos - model.Pos;
             MicroGroupEditorInfo group = new MicroGroupEditorInfo();
-            group.GroupId = operateData.view.editorInfo.GetUniqueId();
+            group.GroupId = operateData.view.editorInfo.GetNodeUniqueId();
             group.Pos = operateData.mousePos - offset;
             group.Title = model.Title;
             group.GroupColor = model.Color;

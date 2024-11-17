@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 
@@ -7,10 +9,13 @@ namespace MicroGraph.Editor
     /// <summary>
     /// 控制器
     /// </summary>
-    internal interface IMicroSubControl
+    public interface IMicroSubControl
     {
+        string Name { get; }
+        VisualElement Panel { get; }
         void Show();
         void Hide();
+        void Exit();
     }
 
     /// <summary>
@@ -24,16 +29,6 @@ namespace MicroGraph.Editor
         private VisualElement _titleContainer;
         private List<ControlModel> _controls = new List<ControlModel>();
         private TabbedView _tabbedView;
-        private TabButton _tabVarButton;
-        private TabButton _tabGraphButton;
-        private TabButton _tabNodeButton;
-        private TabButton _tabTemplateButton;
-
-        public MicroVariableControlSubView VariableControlView { get; private set; }
-        public MicroGraphControlSubView GraphControlView { get; private set; }
-        public MicroNodeControlSubView NodeControlView { get; private set; }
-        public MicroTemplateControlSubView TemplateControlSubView { get; private set; }
-
         public override VisualElement contentContainer => _contentContainer;
         public MicroControlView(BaseMicroGraphView graph)
         {
@@ -56,31 +51,42 @@ namespace MicroGraph.Editor
             _tabbedView = new TabbedView();
             this._contentContainer.Add(_tabbedView);
 
-            VariableControlView = new MicroVariableControlSubView(_owner);
-            GraphControlView = new MicroGraphControlSubView(_owner);
-            NodeControlView = new MicroNodeControlSubView(_owner);
-            TemplateControlSubView = new MicroTemplateControlSubView(_owner);
-
-            _tabVarButton = new TabButton("变量信息", VariableControlView);
-            _tabTemplateButton = new TabButton("模板信息", TemplateControlSubView);
-            _tabNodeButton = new TabButton("节点信息", NodeControlView);
-            _tabGraphButton = new TabButton("微图信息", GraphControlView);
-
-            _tabVarButton.OnSelect += m_tabbutton_OnSelect;
-            _tabVarButton.OnClose += m_tabbutton_OnClose;
-            _tabGraphButton.OnSelect += m_tabbutton_OnSelect;
-            _tabGraphButton.OnClose += m_tabbutton_OnClose;
-            _tabNodeButton.OnSelect += m_tabbutton_OnSelect;
-            _tabNodeButton.OnClose += m_tabbutton_OnClose;
-            _tabTemplateButton.OnSelect += m_tabbutton_OnSelect;
-            _tabTemplateButton.OnClose += m_tabbutton_OnClose;
-
-            _tabbedView.AddTab(_tabVarButton, true);
-            _tabbedView.AddTab(_tabTemplateButton, false);
-            _tabbedView.AddTab(_tabNodeButton, false);
-            _tabbedView.AddTab(_tabGraphButton, false);
+            foreach (var controlType in TypeCache.GetTypesDerivedFrom<IMicroSubControl>())
+            {
+                if (controlType.IsEnum || controlType.IsAbstract)
+                    continue;
+                var control = (IMicroSubControl)System.Activator.CreateInstance(controlType, new object[] { _owner });
+                var orderAttr = controlType.GetCustomAttribute<MicroGraphOrderAttribute>();
+                var controlModel = new ControlModel();
+                if (orderAttr != null)
+                    controlModel.order = orderAttr.Order;
+                controlModel.name = control.Name;
+                controlModel.control = control;
+                controlModel.tabButton = new TabButton(controlModel.name, controlModel.control.Panel);
+                _controls.Add(controlModel);
+            }
+            _controls.Sort((a, b) => a.order.CompareTo(b.order));
+            for (int i = 0; i < _controls.Count; i++)
+            {
+                var controlModel = _controls[i];
+                _tabbedView.AddTab(controlModel.tabButton, i == 0);
+                controlModel.tabButton.OnSelect += m_tabbutton_OnSelect;
+                controlModel.tabButton.OnClose += m_tabbutton_OnClose;
+            }
             _tabbedView.scrollable = true;
-            //SetPosition(new Rect(new Vector2(0, 36), new Vector2(200, 320)));
+            GetControl<MicroVariableControlSubView>()?.Show();
+        }
+
+        public T GetControl<T>() where T : IMicroSubControl
+        {
+            foreach (var controlModel in _controls)
+            {
+                if (controlModel.control is T)
+                {
+                    return (T)controlModel.control;
+                }
+            }
+            return default;
         }
 
         private void m_tabbutton_OnClose(TabButton obj)
@@ -122,17 +128,18 @@ namespace MicroGraph.Editor
 
         internal void Exit()
         {
-            VariableControlView.Exit();
-            GraphControlView.Exit();
-            NodeControlView.Exit();
-            TemplateControlSubView.Exit();
+            foreach (var controlModel in _controls)
+            {
+                controlModel.control.Exit();
+            }
         }
 
         private class ControlModel
         {
             public string name;
-            public Button button;
-            public VisualElement panel;
+            public int order;
+            public IMicroSubControl control;
+            public TabButton tabButton;
         }
     }
 }

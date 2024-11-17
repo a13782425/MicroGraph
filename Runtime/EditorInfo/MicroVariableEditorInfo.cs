@@ -22,6 +22,12 @@ namespace MicroGraph.Runtime
         /// </summary>
         [SerializeField]
         public bool CanAssign = true;
+        /// <summary>
+        /// 注释
+        /// </summary>
+        [SerializeField]
+        public string Comment = "";
+
         [NonSerialized]
         [HideInInspector]
         public BaseMicroVariable Target;

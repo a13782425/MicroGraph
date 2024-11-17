@@ -37,6 +37,12 @@ namespace MicroGraph.Editor
         /// 非BaseMicroNode和BaseMicroVariable，只是普通的Var
         /// </summary>
         VarPort = 1 << 4,
+
+        /// <summary>
+        /// 包端口
+        /// 包端口只能连接BaseMicroNode
+        /// </summary>
+        PackagePort = 1 << 7,
         ///// <summary>
         ///// BaseMicroVariable引用端口
         ///// </summary>

@@ -150,6 +150,7 @@ namespace MicroGraph.Editor
             this.theme = (StickyNoteTheme)this._editorInfo.Theme;
             this._fontStyle = (MicroStickyFontStyle)this._editorInfo.FontStyle;
             _contents.style.fontSize = this._editorInfo.FontSize;
+            m_changeFontSize(_contentsField, this._editorInfo.FontSize - 1);
             _sizePopup.value = _editorInfo.FontSize;
             if ((_fontStyle & MicroStickyFontStyle.Bold) > 0)
                 _boldButton.AddToClassList("select");
@@ -267,6 +268,17 @@ namespace MicroGraph.Editor
             int fontSize = evt.newValue;
             _contents.style.fontSize = fontSize;
             _editorInfo.FontSize = fontSize;
+            m_changeFontSize(_contentsField, fontSize - 1);
+
+
+        }
+        private void m_changeFontSize(VisualElement element, int editorFontSize)
+        {
+            foreach (VisualElement child in element.Children())
+            {
+                child.style.fontSize = editorFontSize;
+                m_changeFontSize(child, editorFontSize);
+            }
         }
         private void m_changedTheme()
         {

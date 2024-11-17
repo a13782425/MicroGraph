@@ -9,8 +9,11 @@ using UnityEngine.UIElements;
 
 namespace MicroGraph.Editor
 {
+    [MicroGraphOrder(MicroVariableControlSubView.VARIABLE_CONTROL_ORDER + 300)]
     internal class MicroNodeControlSubView : VisualElement, IMicroSubControl
     {
+        public VisualElement Panel => this;
+        public string Name => "节点信息";
         private BaseMicroGraphView _owner;
         private const string STYLE_PATH = "Uss/MicroGraph/Control/MicroNodeControlSubView";
         private Label _warningLabel;

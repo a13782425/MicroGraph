@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MicroGraph.Runtime;
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -16,6 +17,9 @@ namespace MicroGraph.Editor
         private BaseMicroGraphView _baseMicroGraphView;
         private List<string> _groups = new List<string>();
         private List<NodeCategoryModel> nodeCategories = new List<NodeCategoryModel>();
+
+        private List<MicroGroupEditorInfo> groupEditors = new List<MicroGroupEditorInfo>();
+
         private bool _isUnique = false;
         public void Initialize(BaseMicroGraphView baseMicroGraphView, GraphCategoryModel categoryInfo, bool isUniqueCreate = false)
         {
@@ -37,8 +41,28 @@ namespace MicroGraph.Editor
         {
             _searchTrees.Clear();
             _searchTrees.Add(new SearchTreeGroupEntry(new GUIContent("创建节点")));
+            if (!_isUnique)
+                AddPackageTree();
             AddNodeTree();
             return _searchTrees;
+        }
+
+        private void AddPackageTree()
+        {
+            groupEditors.Clear();
+            foreach (var item in _baseMicroGraphView.editorInfo.Groups)
+            {
+                if (!item.IsPackage)
+                    continue;
+                groupEditors.Add(item);
+            }
+            if (groupEditors.Count == 0)
+                return;
+            _searchTrees.Add(new SearchTreeGroupEntry(new GUIContent("节点包"), 1));
+            foreach (var item in groupEditors)
+            {
+                _searchTrees.Add(new SearchTreeEntry(new GUIContent(item.Title)) { level = 2, userData = item });
+            }
         }
 
         public bool OnSelectEntry(SearchTreeEntry searchTreeEntry, SearchWindowContext context)
@@ -55,7 +79,7 @@ namespace MicroGraph.Editor
             _groups.Clear();
             foreach (NodeCategoryModel nodeConfig in nodeCategories)
             {
-                if (!nodeConfig.IsEnable)
+                if (nodeConfig.EnableState != MicroNodeEnableState.Enabled)
                     continue;
                 int createIndex = int.MaxValue;
 

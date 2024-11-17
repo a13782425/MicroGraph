@@ -1,7 +1,7 @@
 ﻿.unity-search-popup-field__category{
 	-unity-font-style: bold;
 	-unity-text-align: middle-left;
-	height: 18px;
+	height: 22px;
 	padding-left: 5px;
 	margin-left: 1px;
 	text-overflow: ellipsis;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace MicroGraph.Runtime
 {
@@ -9,21 +8,47 @@ namespace MicroGraph.Runtime
     /// </summary>
     /// <param name="runtime"></param>
     /// <param name="state"></param>
-    public delegate void MicroGraphRuntimeStateChanged(int startNodeId, MicroGraphRuntimeState oldState, MicroGraphRuntimeState newState);
+    public delegate void MicroGraphRuntimeStateChanged(RuntimeAtom runtimeAtom, MicroGraphRuntimeState oldState, MicroGraphRuntimeState newState);
     /// <summary>
     /// 微图运行时示例
     /// </summary>
-    public class MicroGraphRuntime
+    public class MicroGraphRuntime : IDisposable
     {
+        /// <summary>
+        /// 原始微图
+        /// </summary>
+        private readonly BaseMicroGraph _originGraph;
+
         private BaseMicroGraph _runtimeGraph;
         /// <summary>
         /// 运行时的微图实例
         /// </summary>
         public BaseMicroGraph RuntimeGraph { get { return _runtimeGraph; } }
+
+        private string _runtimeName;
         /// <summary>
-        /// 原始微图
+        /// 运行时名字
         /// </summary>
-        private readonly BaseMicroGraph _originGraph;
+        public string RuntimeName
+        {
+            get => _runtimeName;
+            set
+            {
+                string oldName = _runtimeName;
+                _runtimeName = value;
+                _runtimeGraph.name = value;
+#if MICRO_GRAPH_DEBUG
+                if (MicroGraphDebugger.IsListener && oldName != _runtimeName)
+                {
+                    DebuggerGraphRenameData renameData = new DebuggerGraphRenameData();
+                    renameData.oldName = oldName;
+                    renameData.newName = _runtimeName;
+                    renameData.microGraphId = RuntimeGraph.OnlyId;
+                    MicroGraphDebugger.Send(renameData);
+                }
+#endif
+            }
+        }
 
         private int _singleRunNodeCount = 100;
 
@@ -42,29 +67,53 @@ namespace MicroGraph.Runtime
         /// 所有运行时
         /// </summary>
         private Dictionary<int, RuntimeAtom> _runtimeAtoms = new Dictionary<int, RuntimeAtom>();
-        private List<int> _startNodes = new List<int>();
-
-        /// <summary>
-        /// 已经被使用的node
-        /// 因为刚开始已经深拷贝一次，尽量用一个对象
-        /// </summary>
-        private HashSet<int> _useNodes = new HashSet<int>();
+        private List<int> _runningNodes = new List<int>();
 
         /// <summary>
         /// 当前运行节点数量
         /// </summary>
         private int _curRunNodeCount = 0;
-        public MicroGraphRuntime(BaseMicroGraph microGraph)
+        /// <summary>
+        /// 是否显示运行日志
+        /// </summary>
+        public bool ShowRunningLog { get; set; }
+
+        /// <summary>
+        /// 是否已经释放
+        /// </summary>
+        private bool _isDispose = false;
+        /// <summary>
+        /// 是否已经释放
+        /// </summary>
+        public bool IsDispose => _isDispose;
+
+        public MicroGraphRuntime(BaseMicroGraph microGraph, string runtimeName = null)
         {
+            ShowRunningLog = false;
             if (microGraph == null)
             {
                 MicroGraphLogger.LogError("原始微图为空");
                 return;
             }
             this._originGraph = microGraph;
-
             this._runtimeGraph = (BaseMicroGraph)microGraph.DeepClone();
+            this._runtimeGraph.name = string.IsNullOrWhiteSpace(runtimeName) ? microGraph.name + "_" + _runtimeGraph.GetInstanceID() : runtimeName;
             this._runtimeGraph.Initialize();
+            this._runtimeName = this._runtimeGraph.name;
+#if MICRO_GRAPH_DEBUG
+            if (MicroGraphDebugger.IsListener)
+            {
+                DebuggerGraphData graphData = DebuggerGraphData.Create();
+                graphData.runtimeName = RuntimeName;
+                graphData.microGraphId = RuntimeGraph.OnlyId;
+                graphData.start = true;
+                MicroGraphDebugger.Send(graphData);
+                //发送变量
+                foreach (var item in _runtimeGraph.Variables)
+                    item.SetValue(item.GetValue());
+                DebuggerGraphData.Release(graphData);
+            }
+#endif
         }
 
         /// <summary>
@@ -74,6 +123,11 @@ namespace MicroGraph.Runtime
         /// <param name="startNodeIds">开始的节点唯一Id</param>
         public void Play(params int[] startNodeIds)
         {
+            if (_isDispose)
+            {
+                MicroGraphLogger.LogWarning($"当前运行时已被释放");
+                return;
+            }
             if (_runtimeGraph == null)
             {
                 MicroGraphLogger.LogError("当前没有可播放的微图");
@@ -88,34 +142,24 @@ namespace MicroGraph.Runtime
             _curRunNodeCount = SingleRunNodeCount;
             foreach (var item in startNodeIds)
             {
-                if (_runtimeAtoms.TryGetValue(item, out RuntimeAtom atom))
+                if (_runningNodes.Contains(item))
                 {
-                    if (atom.RuntimeState != MicroGraphRuntimeState.Idle && atom.RuntimeState != MicroGraphRuntimeState.Exit)
-                    {
-                        MicroGraphLogger.LogWarning($"当前开始节点:{item} 正在运行，请先停止运行中的开始节点，再运行开始节点");
-                        continue;
-                    }
-                    else
-                    {
-                        if (atom.isRemove)
-                        {
-                            atom.isRemove = false;
-                            _startNodes.Add(item);
-                        }
-                        atom.Play();
-                        continue;
-                    }
-                }
-                BaseMicroNode startNode = m_getNode(item);
-                if (startNode == null)
-                {
-                    MicroGraphLogger.LogWarning($"开始节点：{item} 不存在");
+                    MicroGraphLogger.LogWarning($"当前开始节点:{item} 正在运行，请先停止运行中的开始节点，再运行开始节点");
                     continue;
                 }
-                atom = new RuntimeAtom(this, startNode);
-                _startNodes.Add(item);
+                _runningNodes.Add(item);
+                if (_runtimeAtoms.ContainsKey(item))
+                    continue;
+                RuntimeAtom atom = new RuntimeAtom(_runtimeGraph, item);
+                atom.SingleRunNodeCount = this.SingleRunNodeCount;
+                atom.onStateChanged += m_atomOnStateChanged;
+                atom.onStateChanged += onStateChanged;
                 _runtimeAtoms[item] = atom;
-                atom.Play();
+            }
+            foreach (var item in startNodeIds)
+            {
+                if (_runningNodes.Contains(item))
+                    _runtimeAtoms[item].Play();
             }
         }
 
@@ -135,7 +179,7 @@ namespace MicroGraph.Runtime
                 }
                 catch (Exception ex)
                 {
-                    MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.StartNode.GetType().FullName} Update执行失败, Msg: {ex.Message}");
+                    MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.startNode.GetType().FullName} Update执行失败, Msg: {ex.Message}");
                 }
             }
         }
@@ -147,12 +191,12 @@ namespace MicroGraph.Runtime
         public void Update(float deltaTime, float unscaledDeltaTime)
         {
             _curRunNodeCount = SingleRunNodeCount;
-            for (int i = _startNodes.Count - 1; i >= 0; i--)
+            for (int i = _runningNodes.Count - 1; i >= 0; i--)
             {
-                if (_startNodes.Count <= i)
+                if (_runningNodes.Count <= i)
                     continue;
 
-                if (_runtimeAtoms.TryGetValue(_startNodes[i], out RuntimeAtom atom))
+                if (_runtimeAtoms.TryGetValue(_runningNodes[i], out RuntimeAtom atom))
                 {
                     try
                     {
@@ -160,7 +204,7 @@ namespace MicroGraph.Runtime
                     }
                     catch (Exception ex)
                     {
-                        MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.StartNode.GetType().FullName} Update执行失败, Msg: {ex.Message}");
+                        MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.startNode.GetType().FullName} Update执行失败, Msg: {ex.Message}");
                     }
                 }
             }
@@ -179,7 +223,7 @@ namespace MicroGraph.Runtime
                 }
                 catch (Exception ex)
                 {
-                    MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.StartNode.GetType().FullName} 暂停失败, Msg: {ex.Message}");
+                    MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.startNode.GetType().FullName} 暂停失败, Msg: {ex.Message}");
                 }
             }
         }
@@ -188,11 +232,11 @@ namespace MicroGraph.Runtime
         /// </summary>
         public void Pause()
         {
-            for (int i = _startNodes.Count - 1; i >= 0; i--)
+            for (int i = _runningNodes.Count - 1; i >= 0; i--)
             {
-                if (_startNodes.Count <= i)
+                if (_runningNodes.Count <= i)
                     continue;
-                if (_runtimeAtoms.TryGetValue(_startNodes[i], out RuntimeAtom atom))
+                if (_runtimeAtoms.TryGetValue(_runningNodes[i], out RuntimeAtom atom))
                 {
                     try
                     {
@@ -200,7 +244,7 @@ namespace MicroGraph.Runtime
                     }
                     catch (Exception ex)
                     {
-                        MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.StartNode.GetType().FullName} 暂停失败, Msg: {ex.Message}");
+                        MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.startNode.GetType().FullName} 暂停失败, Msg: {ex.Message}");
                     }
 
                 }
@@ -220,7 +264,7 @@ namespace MicroGraph.Runtime
                 }
                 catch (Exception ex)
                 {
-                    MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.StartNode.GetType().FullName} 恢复失败, Msg: {ex.Message}");
+                    MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.startNode.GetType().FullName} 恢复失败, Msg: {ex.Message}");
                 }
             }
         }
@@ -229,11 +273,11 @@ namespace MicroGraph.Runtime
         /// </summary>
         public void Resume()
         {
-            for (int i = _startNodes.Count - 1; i >= 0; i--)
+            for (int i = _runningNodes.Count - 1; i >= 0; i--)
             {
-                if (_startNodes.Count <= i)
+                if (_runningNodes.Count <= i)
                     continue;
-                if (_runtimeAtoms.TryGetValue(_startNodes[i], out RuntimeAtom atom))
+                if (_runtimeAtoms.TryGetValue(_runningNodes[i], out RuntimeAtom atom))
                 {
                     try
                     {
@@ -241,7 +285,7 @@ namespace MicroGraph.Runtime
                     }
                     catch (Exception ex)
                     {
-                        MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.StartNode.GetType().FullName} 恢复失败, Msg: {ex.Message}");
+                        MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.startNode.GetType().FullName} 恢复失败, Msg: {ex.Message}");
                     }
 
                 }
@@ -249,8 +293,7 @@ namespace MicroGraph.Runtime
         }
 
         /// <summary>
-        /// 退出指定的开始节点
-        ///  <para>会将其删除</para>
+        /// 停止某个节点
         /// </summary>
         /// <param name="startNodeId"></param>
         public void Exit(int startNodeId)
@@ -263,26 +306,24 @@ namespace MicroGraph.Runtime
                 }
                 catch (Exception ex)
                 {
-                    MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.StartNode.GetType().FullName} 退出失败, Msg: {ex.Message}");
+                    MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.startNode.GetType().FullName} 退出失败, Msg: {ex.Message}");
                 }
                 finally
                 {
-                    atom.isRemove = true;
-                    _startNodes.Remove(startNodeId);
+                    _runningNodes.Remove(startNodeId);
                 }
             }
         }
         /// <summary>
-        /// 退出全部
-        /// <para>会删除全部</para>
+        /// 停止全部
         /// </summary>
         public void Exit()
         {
-            for (int i = _startNodes.Count - 1; i >= 0; i--)
+            for (int i = _runningNodes.Count - 1; i >= 0; i--)
             {
-                if (_startNodes.Count <= i)
+                if (_runningNodes.Count <= i)
                     continue;
-                if (_runtimeAtoms.TryGetValue(_startNodes[i], out RuntimeAtom atom))
+                if (_runtimeAtoms.TryGetValue(_runningNodes[i], out RuntimeAtom atom))
                 {
                     try
                     {
@@ -290,16 +331,13 @@ namespace MicroGraph.Runtime
                     }
                     catch (Exception ex)
                     {
-                        MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.StartNode.GetType().FullName} 退出失败, Msg: {ex.Message}");
-                    }
-                    finally
-                    {
-                        atom.isRemove = true;
+                        MicroGraphLogger.LogError($"微图:{_runtimeGraph.name} 中的开始节点: {atom.startNode.GetType().FullName} 退出失败, Msg: {ex.Message}");
                     }
                 }
             }
-            _startNodes.Clear();
+            _runningNodes.Clear();
         }
+
         /// <summary>
         /// 获取某个开始节点的运行时状态
         /// </summary>
@@ -311,305 +349,536 @@ namespace MicroGraph.Runtime
                 return atom.RuntimeState;
             return MicroGraphRuntimeState.Illegality;
         }
-        private BaseMicroNode m_getNode(int startNodeId)
+
+        /// <summary>
+        /// 释放当前运行时
+        /// </summary>
+        public void Dispose()
         {
-            BaseMicroNode originNode = _runtimeGraph.GetNode(startNodeId);
-            if (originNode == null)
-                return null;
-            if (_useNodes.Contains(startNodeId))
+            _isDispose = true;
+            Exit();
+            foreach (var node in _runtimeGraph.Nodes)
             {
-                BaseMicroNode node = (BaseMicroNode)originNode.DeepClone();
-                node.Initialize(_runtimeGraph);
-                return node;
+                if (node.State != NodeState.Exit)
+                    node.OnExit();
             }
-            else
+#if MICRO_GRAPH_DEBUG
+            if (MicroGraphDebugger.IsListener)
             {
-                _useNodes.Add(startNodeId);
-                return originNode;
+                DebuggerGraphDeleteData graphData = new DebuggerGraphDeleteData();
+                graphData.runtimeName = RuntimeName;
+                graphData.microGraphId = RuntimeGraph.OnlyId;
+                MicroGraphDebugger.Send(graphData);
+            }
+#endif
+        }
+        /// <summary>
+        /// 运行单元状态变化
+        /// </summary>
+        /// <param name="runtimeAtom"></param>
+        /// <param name="oldState"></param>
+        /// <param name="newState"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void m_atomOnStateChanged(RuntimeAtom runtimeAtom, MicroGraphRuntimeState oldState, MicroGraphRuntimeState newState)
+        {
+            if (newState == MicroGraphRuntimeState.Complete || newState == MicroGraphRuntimeState.Exit)
+                _runningNodes.Remove(runtimeAtom.startNodeId);
+        }
+        ~MicroGraphRuntime()
+        {
+#if MICRO_GRAPH_DEBUG
+            if (MicroGraphDebugger.IsListener)
+            {
+                DebuggerGraphDeleteData graphData = new DebuggerGraphDeleteData();
+                graphData.runtimeName = RuntimeName;
+                graphData.microGraphId = RuntimeGraph.OnlyId;
+                MicroGraphDebugger.Send(graphData);
+            }
+#endif
+        }
+    }
+    /// <summary>
+    /// 运行时最小单元
+    /// <para>每个运行时最小单元的节点相互独立互不干扰</para>
+    /// </summary>
+    public class RuntimeAtom
+    {
+        public readonly int startNodeId;
+
+        internal readonly BaseMicroNode startNode;
+        internal readonly BaseMicroGraph microGraph;
+        internal event MicroGraphRuntimeStateChanged onStateChanged;
+        private MicroGraphRuntimeState _runtimeState = MicroGraphRuntimeState.Idle;
+        private MicroGraphRuntimeEndMode _endMode = MicroGraphRuntimeEndMode.None;
+        /// <summary>
+        /// 运行时的结束模式
+        /// <para>1.自动结束</para>
+        /// <para>2.触发Exit结束</para>
+        /// <para>3.触发EndNodeId结束</para>
+        /// </summary>
+        public MicroGraphRuntimeEndMode EndMode { get => _endMode; }
+        /// <summary>
+        /// 执行过的节点
+        /// 方便后面操作
+        /// </summary>
+        private Dictionary<int, BaseMicroNode> _nodes = new Dictionary<int, BaseMicroNode>();
+        /// <summary>
+        /// 等待中的节点
+        /// </summary>
+        private Queue<RuntimeNodeData> _waitNodes = new Queue<RuntimeNodeData>();
+        private Queue<RuntimeNodeData> _updateNodes = new Queue<RuntimeNodeData>();
+        private Queue<RuntimeNodeData> _nextUpdateNodes = new Queue<RuntimeNodeData>();
+        /// <summary>
+        /// 用户自定义数据
+        /// </summary>
+        public object UserData { get; set; }
+        /// <summary>
+        /// 单次指定最大节点数量(默认100)
+        /// <para>避免节点过多时卡死</para>
+        /// </summary>
+        public int SingleRunNodeCount { get; set; } = 100;
+        /// <summary>
+        /// 当前运行节点数量
+        /// </summary>
+        private int _curRunNodeCount = 0;
+
+        private int _endNodeId = -1;
+        /// <summary>
+        /// 手动结束节点，默认是-1(自动结束)
+        /// <para>如果是-1则该运行单元会全部执行完毕</para>
+        /// <para>如果手动指定了结束按钮，那么当手动结束按钮执行结束之后，该运行单元会变成Complete，后续节点也不会运行</para>
+        /// </summary>
+        public int EndNodeId { get => _endNodeId; set => _endNodeId = value; }
+
+        /// <summary>
+        /// 是否运行到结束节点
+        /// </summary>
+        private bool _isEndNodeComplete = false;
+
+        private int _runtimeUniqueId = 0;
+        /// <summary>
+        /// 运行时的唯一Id
+        /// </summary>
+        public int RuntimeUniqueId => _runtimeUniqueId;
+
+        /// <summary>
+        /// 运行时版本
+        /// <para>每个节点在执行时版本号会加一</para>
+        /// </summary>
+        private int _runtimeVersion = int.MinValue;
+        /// <summary>
+        /// 运行时版本
+        /// </summary>
+        private int RuntimeVersion
+        {
+            get
+            {
+                _runtimeVersion++;
+                if (_runtimeVersion == int.MaxValue)
+                    _runtimeVersion = int.MinValue;
+                return _runtimeVersion;
             }
         }
-        private class RuntimeAtom
+        public MicroGraphRuntimeState RuntimeState
         {
-            private readonly MicroGraphRuntime _runtime;
-
-            internal readonly int StartNodeId;
-
-            internal readonly BaseMicroNode StartNode;
-
-            internal bool isRemove = false;
-
-            private Dictionary<int, BaseMicroNode> _nodes = new Dictionary<int, BaseMicroNode>();
-            /// <summary>
-            /// 等待中的节点
-            /// </summary>
-            private Queue<BaseMicroNode> _waitNodes = new Queue<BaseMicroNode>();
-            private Queue<BaseMicroNode> _updateNodes = new Queue<BaseMicroNode>();
-            private Queue<BaseMicroNode> _nextUpdateNodes = new Queue<BaseMicroNode>();
-            internal MicroGraphRuntimeState RuntimeState
+            get => _runtimeState;
+            private set
             {
-                get => _runtimeState;
-                set
+                var old = _runtimeState;
+                _runtimeState = value;
+                if (value != old)
                 {
-                    var old = _runtimeState;
-                    _runtimeState = value;
-                    if (value != old)
+                    try
+                    {
+                        onStateChanged?.Invoke(this, old, value);
+                    }
+                    catch (Exception ex)
+                    {
+                        MicroGraphLogger.LogError($"微图:{microGraph.name}中的开始节点:{startNodeId} 的状态改变执行失败，Msg: {ex.Message}");
+                    }
+                }
+            }
+        }
+        public RuntimeAtom(BaseMicroGraph microGraph, int startNodeId)
+        {
+            if (microGraph == null)
+                throw new MicroGraphNullException("微图为空");
+            this.microGraph = microGraph;
+            this.startNodeId = startNodeId;
+            this.startNode = microGraph.GetNode(startNodeId);
+            this._runtimeUniqueId = S_RuntimeId;
+            if (startNode == null)
+                throw new MicroGraphNullException($"微图: {microGraph.name} 中没有找到开始节点：{startNodeId}");
+        }
+        public void Play()
+        {
+            if (_runtimeState == MicroGraphRuntimeState.Complete || _runtimeState == MicroGraphRuntimeState.Exit)
+                RuntimeState = MicroGraphRuntimeState.Idle;
+
+            if (_runtimeState != MicroGraphRuntimeState.Idle)
+            {
+                MicroGraphLogger.LogWarning($"微图: {microGraph.name} 请不要重复运行一个运行时");
+                return;
+            }
+            _endMode = MicroGraphRuntimeEndMode.None;
+            _curRunNodeCount = SingleRunNodeCount;
+            _isEndNodeComplete = false;
+            RuntimeState = MicroGraphRuntimeState.Running;
+            var nodeData = m_getNode(startNodeId);
+            m_cacheNode(nodeData);
+            _waitNodes.Enqueue(nodeData);
+            m_execute();
+            m_swapUpdateNode();
+        }
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="deltaTime">一帧的时间受Time.Scale影响</param>
+        /// <param name="unscaledDeltaTime">一帧的时间不受影响</param>
+        public void Update(float deltaTime, float unscaledDeltaTime)
+        {
+            if (_runtimeState != MicroGraphRuntimeState.Running)
+                return;
+            _curRunNodeCount = SingleRunNodeCount;
+            m_update(deltaTime, unscaledDeltaTime);
+            m_execute();
+            m_swapUpdateNode();
+            m_checkFinish();
+        }
+        /// <summary>
+        /// 暂停
+        /// </summary>
+        public void Pause()
+        {
+            if (_runtimeState != MicroGraphRuntimeState.Running)
+            {
+                MicroGraphLogger.Log($"微图:{microGraph.name} 中的开始节点: {startNode} 不处于执行状态，无法暂停");
+                return;
+            }
+            RuntimeState = MicroGraphRuntimeState.Pause;
+        }
+        /// <summary>
+        /// 恢复
+        /// </summary>
+        public void Resume()
+        {
+            if (_runtimeState != MicroGraphRuntimeState.Pause)
+            {
+                MicroGraphLogger.Log($"微图:{microGraph.name} 中的开始节点: {startNode} 不处于暂停状态，无法恢复");
+                return;
+            }
+            RuntimeState = MicroGraphRuntimeState.Running;
+        }
+        public void Exit()
+        {
+            if (_runtimeState == MicroGraphRuntimeState.Exit)
+            {
+                MicroGraphLogger.Log($"微图:{microGraph.name} 中的开始节点: {startNode} 重复退出");
+                return;
+            }
+            //如果之前是无结束状态，则需要设置结束状态为手动结束
+            if (_endMode == MicroGraphRuntimeEndMode.None)
+                _endMode = MicroGraphRuntimeEndMode.Manual;
+            while (_waitNodes.Count > 0)
+            {
+                var node = _waitNodes.Dequeue();
+                try
+                {
+                    node.node.OnStop();
+                }
+                catch (Exception ex)
+                {
+                    MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node},停止失败：{ex.Message}");
+                }
+            }
+            while (_updateNodes.Count > 0)
+            {
+                var node = _updateNodes.Dequeue();
+                try
+                {
+                    node.node.OnStop();
+                }
+                catch (Exception ex)
+                {
+                    MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node},停止失败：{ex.Message}");
+                }
+            }
+            _nextUpdateNodes.Clear();
+            microGraph.RemoveRuntime(_runtimeUniqueId);
+            RuntimeState = MicroGraphRuntimeState.Exit;
+        }
+
+        /// <summary>
+        /// 当蓝图执行完成
+        /// </summary>
+        private void m_complete()
+        {
+            while (_waitNodes.Count > 0)
+            {
+                var node = _waitNodes.Dequeue();
+                try
+                {
+                    node.node.OnStop();
+                }
+                catch (Exception ex)
+                {
+                    MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node},停止失败：{ex.Message}");
+                }
+            }
+            while (_updateNodes.Count > 0)
+            {
+                var node = _updateNodes.Dequeue();
+                try
+                {
+                    node.node.OnStop();
+                }
+                catch (Exception ex)
+                {
+                    MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node},停止失败：{ex.Message}");
+                }
+            }
+            _nextUpdateNodes.Clear();
+            foreach (var item in _nodes)
+            {
+                try
+                {
+                    item.Value.OnReset();
+                }
+                catch (Exception ex)
+                {
+                    MicroGraphLogger.Log($"微图:{microGraph.name} 中的节点: {item.Value} 重置失败: {ex.Message}");
+                }
+            }
+            RuntimeState = MicroGraphRuntimeState.Complete;
+        }
+        /// <summary>
+        /// 检测是否完成
+        /// </summary>
+        private void m_checkFinish()
+        {
+            if (_isEndNodeComplete)
+                _endMode = MicroGraphRuntimeEndMode.EndNode;
+            else if (_waitNodes.Count == 0 && _updateNodes.Count == 0)
+                _endMode = MicroGraphRuntimeEndMode.Auto;
+            if (_endMode == MicroGraphRuntimeEndMode.None)
+                return;
+            m_complete();
+            MicroGraphLogger.Log($"微图:{microGraph.name} 中的开始节点: {startNode} 执行完成");
+
+        }
+        /// <summary>
+        /// 执行单个节点
+        /// </summary>
+        private void m_execute()
+        {
+            while (_waitNodes.Count > 0)
+            {
+                _curRunNodeCount--;
+                if (_curRunNodeCount == 0)
+                {
+                    MicroGraphLogger.Log($"微图: {microGraph.name} 中单次运行超过:{SingleRunNodeCount}个节点");
+                    break;
+                }
+                var node = _waitNodes.Dequeue();
+                m_cacheNode(node);
+                try
+                {
+                    node.version = RuntimeVersion;
+                    node.node.RuntimVersion = node.version;
+                    node.node.OnEnable();
+                    if (node.node.State == NodeState.Skip) //如果OnEnable后，节点状态为跳过，则不执行后续操作
+                    {
+                        m_checkEndComplete(node.nodeId);
+                        ReleaseNodeData(node);
+                        continue;
+                    }
+                    try
+                    {
+                        node.node.PullVariable();
+                    }
+                    catch (Exception ex)
+                    {
+                        MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node.node} 拉取变量失败: {ex.Message}");
+                        throw ex;
+                    }
+                    node.node.OnExecute();
+                    if (node.node.State == NodeState.Success || node.node.State == NodeState.Skip)
                     {
                         try
                         {
-                            _runtime.onStateChanged?.Invoke(StartNodeId, old, value);
+                            node.node.PushVariable();
                         }
                         catch (Exception ex)
                         {
-                            MicroGraphLogger.LogError($"开始节点:{StartNodeId} 的状态改变执行失败，Msg: {ex.Message}");
-                        }
-                    }
-                }
-            }
-
-            private MicroGraphRuntimeState _runtimeState = MicroGraphRuntimeState.Idle;
-            internal RuntimeAtom(MicroGraphRuntime runtime, BaseMicroNode startNode)
-            {
-                _runtime = runtime;
-                StartNodeId = startNode.OnlyId;
-                StartNode = startNode;
-            }
-
-            internal void Play()
-            {
-                if (_runtimeState != MicroGraphRuntimeState.Idle)
-                {
-                    //第二次进入，需要将旧的节点重置
-                    foreach (var item in _nodes)
-                    {
-                        item.Value.OnReset();
-                    }
-                }
-                _waitNodes.Enqueue(StartNode);
-                RuntimeState = MicroGraphRuntimeState.Running;
-                m_execute();
-                m_swapUpdateNode();
-            }
-            /// <summary>
-            /// 更新
-            /// </summary>
-            /// <param name="deltaTime">一帧的时间受Time.Scale影响</param>
-            /// <param name="unscaledDeltaTime">一帧的时间不受影响</param>
-            internal void Update(float deltaTime, float unscaledDeltaTime)
-            {
-                if (_runtimeState != MicroGraphRuntimeState.Running)
-                    return;
-                m_update(deltaTime, unscaledDeltaTime);
-                m_execute();
-                m_swapUpdateNode();
-                m_checkFinish();
-            }
-            internal void Pause()
-            {
-                if (_runtimeState != MicroGraphRuntimeState.Running)
-                {
-#if UNITY_EDITOR
-                    MicroGraphLogger.Log($"微图:{_runtime._runtimeGraph.name} 中的开始节点: {StartNode.GetType().FullName} 不处于执行状态，无法暂停");
-#endif
-                    return;
-                }
-                RuntimeState = MicroGraphRuntimeState.Pause;
-            }
-            internal void Resume()
-            {
-                if (_runtimeState != MicroGraphRuntimeState.Pause)
-                {
-#if UNITY_EDITOR
-                    MicroGraphLogger.Log($"微图:{_runtime._runtimeGraph.name} 中的开始节点: {StartNode.GetType().FullName} 不处于暂停状态，无法恢复");
-#endif
-                    return;
-                }
-                RuntimeState = MicroGraphRuntimeState.Running;
-            }
-            internal void Exit()
-            {
-                if (_runtimeState == MicroGraphRuntimeState.Exit || _runtimeState == MicroGraphRuntimeState.ExitFailure)
-                {
-#if UNITY_EDITOR
-                    MicroGraphLogger.Log($"微图:{_runtime._runtimeGraph.name} 中的开始节点: {StartNode.GetType().FullName} 重复退出");
-#endif
-                    return;
-                }
-                RuntimeState = MicroGraphRuntimeState.Exit;
-                while (_waitNodes.Count > 0)
-                {
-                    var node = _waitNodes.Dequeue();
-                    try
-                    {
-                        node.OnStop();
-                    }
-                    catch (Exception ex)
-                    {
-                        MicroGraphLogger.LogError($"节点：{node.GetType().FullName},停止失败：{ex.Message}");
-                    }
-                }
-                while (_updateNodes.Count > 0)
-                {
-                    var node = _updateNodes.Dequeue();
-                    try
-                    {
-                        node.OnStop();
-                    }
-                    catch (Exception ex)
-                    {
-                        MicroGraphLogger.LogError($"节点：{node.GetType().FullName},停止失败：{ex.Message}");
-                    }
-                }
-                _nextUpdateNodes.Clear();
-                foreach (var item in _nodes.Values)
-                {
-                    try
-                    {
-                        item.OnExit();
-                    }
-                    catch (Exception ex)
-                    {
-                        MicroGraphLogger.LogError($"节点：{item.GetType().FullName},退出失败：{ex.Message}");
-                        RuntimeState = MicroGraphRuntimeState.ExitFailure;
-                    }
-                }
-            }
-            /// <summary>
-            /// 执行单个节点
-            /// </summary>
-            private void m_execute()
-            {
-                while (_waitNodes.Count > 0)
-                {
-                    _runtime._curRunNodeCount--;
-                    if (_runtime._curRunNodeCount == 0)
-                    {
-                        MicroGraphLogger.LogWarning($"单次运行超过:{_runtime.SingleRunNodeCount}个节点");
-                        break;
-                    }
-                    var node = _waitNodes.Dequeue();
-                    try
-                    {
-                        node.OnEnable();
-                        try
-                        {
-                            node.PullVariable();
-                        }
-                        catch (Exception ex)
-                        {
-                            MicroGraphLogger.LogError($"节点：{node.GetType().FullName} 拉取变量失败: {ex.Message}");
+                            MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node.node} 推送变量失败: {ex.Message}");
                             throw ex;
                         }
-                        node.OnExecute();
-                        if (node.State == NodeState.Success)
+                        if (node.node.State == NodeState.Skip) //如果当前节点也是跳过，则不获取其子节点
                         {
-                            node.PushVariable();
-                            foreach (var item in node.GetChild())
-                            {
-                                var tempNode = m_getNode(item);
-                                if (tempNode.State == NodeState.Skip)
-                                    continue;
-                                _waitNodes.Enqueue(tempNode);
-                            }
+                            m_checkEndComplete(node.nodeId);
+                            ReleaseNodeData(node);
+                            continue;
                         }
-                        else if (node.State == NodeState.Running)
+                        foreach (var item in node.node.GetChild())
                         {
-                            _nextUpdateNodes.Enqueue(node);
+                            var tempNode = m_getNode(item);
+                            _waitNodes.Enqueue(tempNode);
                         }
-                        else if (node.State == NodeState.Failed)
-                        {
-                            throw new Exception($"节点：{node.GetType().FullName} 执行失败");
-                        }
+                        m_checkEndComplete(node.nodeId);
+                        ReleaseNodeData(node);
                     }
-                    catch (Exception ex)
+                    else if (node.node.State == NodeState.Running)
                     {
-                        MicroGraphLogger.LogError($"节点：{node.GetType().FullName},执行失败：{ex.Message}");
-                        this.RuntimeState = MicroGraphRuntimeState.RunningFailure;
-                        break;
+                        _nextUpdateNodes.Enqueue(node);
                     }
-                }
-            }
-            /// <summary>
-            /// 执行单个节点
-            /// </summary>
-            private void m_update(float deltaTime, float unscaledDeltaTime)
-            {
-                while (_updateNodes.Count > 0)
-                {
-                    _runtime._curRunNodeCount--;
-                    if (_runtime._curRunNodeCount == 0)
+                    else if (node.node.State == NodeState.Failed)
                     {
-                        MicroGraphLogger.LogWarning($"单次运行超过:{_runtime.SingleRunNodeCount}个节点");
-                        break;
-                    }
-                    var node = _updateNodes.Dequeue();
-                    try
-                    {
-                        node.OnUpdate(deltaTime, unscaledDeltaTime);
-                        if (node.State == NodeState.Success)
-                        {
-                            node.PushVariable();
-                            foreach (var item in node.GetChild())
-                            {
-                                var tempNode = m_getNode(item);
-                                if (tempNode.State == NodeState.Skip)
-                                    continue;
-                                _waitNodes.Enqueue(tempNode);
-                            }
-                        }
-                        else if (node.State == NodeState.Running)
-                        {
-                            _nextUpdateNodes.Enqueue(node);
-                        }
-                        else if (node.State == NodeState.Failed)
-                        {
-                            throw new Exception($"节点：{node.GetType().FullName} 执行失败");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MicroGraphLogger.LogError($"节点：{node.GetType().FullName},执行失败：{ex.Message}");
-                        this.RuntimeState = MicroGraphRuntimeState.RunningFailure;
-                        break;
+                        _nextUpdateNodes.Enqueue(node);
+                        MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node.node} 手动标记为执行失败");
                     }
                 }
-            }
-            private void m_swapUpdateNode()
-            {
-                while (_nextUpdateNodes.Count > 0)
+                catch (Exception ex)
                 {
-                    _updateNodes.Enqueue(_nextUpdateNodes.Dequeue());
+                    _nextUpdateNodes.Enqueue(node);
+                    MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node.node},执行失败：{ex.Message}");
+                    this.RuntimeState = MicroGraphRuntimeState.RunningFailure;
+                    break;
                 }
             }
-            /// <summary>
-            /// 检测是否完成
-            /// </summary>
-            private void m_checkFinish()
-            {
-                if (_runtimeState == MicroGraphRuntimeState.RunningFailure)
-                {
-                    Exit();
-                    MicroGraphLogger.LogError($"微图:{_runtime._runtimeGraph.name} 中的开始节点: {StartNode.GetType().FullName} 执行失败");
-                    return;
-                }
-                if (_waitNodes.Count != 0 || _updateNodes.Count != 0)
-                    return;
-                Exit();
-#if UNITY_EDITOR
-                MicroGraphLogger.Log($"微图:{_runtime._runtimeGraph.name} 中的开始节点: {StartNode.GetType().FullName} 执行完成");
-#endif
-            }
-            private BaseMicroNode m_getNode(int nodeId)
-            {
-                if (!_nodes.TryGetValue(nodeId, out BaseMicroNode node))
-                {
-                    node = _runtime.m_getNode(nodeId);
-                    _nodes.Add(nodeId, node);
-                }
-                return node;
-            }
-
-
         }
 
+        /// <summary>
+        /// 执行单个节点
+        /// </summary>
+        private void m_update(float deltaTime, float unscaledDeltaTime)
+        {
+            while (_updateNodes.Count > 0)
+            {
+                _curRunNodeCount--;
+                if (_curRunNodeCount == 0)
+                {
+                    MicroGraphLogger.Log($"微图: {microGraph.name} 中单次运行超过:{SingleRunNodeCount}个节点");
+                    break;
+                }
+                var node = _updateNodes.Dequeue();
+                try
+                {
+                    node.node.RuntimVersion = node.version;
+                    node.node.OnUpdate(deltaTime, unscaledDeltaTime);
+                    if (node.node.State == NodeState.Success || node.node.State == NodeState.Skip)
+                    {
+                        try
+                        {
+                            node.node.PushVariable();
+                        }
+                        catch (Exception ex)
+                        {
+                            MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node.node} 推送变量失败: {ex.Message}");
+                            throw ex;
+                        }
+                        if (node.node.State == NodeState.Skip) //如果当前节点也是跳过，则不获取其子节点
+                        {
+                            m_checkEndComplete(node.nodeId);
+                            ReleaseNodeData(node);
+                            continue;
+                        }
+                        foreach (var item in node.node.GetChild())
+                        {
+                            var tempNode = m_getNode(item);
+                            _waitNodes.Enqueue(tempNode);
+                        }
+                        m_checkEndComplete(node.nodeId);
+                        ReleaseNodeData(node);
+                    }
+                    else if (node.node.State == NodeState.Running)
+                    {
+                        _nextUpdateNodes.Enqueue(node);
+                    }
+                    else if (node.node.State == NodeState.Failed)
+                    {
+                        _nextUpdateNodes.Enqueue(node);
+                        MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node.node} 手动标记为更新失败,");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _nextUpdateNodes.Enqueue(node);
+                    MicroGraphLogger.LogError($"微图: {microGraph.name} 中节点：{node.node},更新失败：{ex.Message}");
+                    this.RuntimeState = MicroGraphRuntimeState.RunningFailure;
+                    break;
+                }
+            }
+        }
+        private void m_swapUpdateNode()
+        {
+            while (_nextUpdateNodes.Count > 0)
+            {
+                _updateNodes.Enqueue(_nextUpdateNodes.Dequeue());
+            }
+        }
+        private void m_cacheNode(RuntimeNodeData nodeData)
+        {
+            if (!_nodes.ContainsKey(nodeData.node.OnlyId))
+                _nodes.Add(nodeData.node.OnlyId, nodeData.node);
+        }
+
+        private void m_checkEndComplete(int nodeId)
+        {
+            if (_isEndNodeComplete)
+                return;
+            _isEndNodeComplete = nodeId == _endNodeId;
+        }
+        private RuntimeNodeData m_getNode(int nodeId)
+        {
+            RuntimeNodeData data = GetNodeData();
+            data.nodeId = nodeId;
+            BaseMicroNode node = microGraph.GetRuntimeNode(_runtimeUniqueId, nodeId);
+            if (node == null)
+                throw new MicroGraphNullException($"微图: {microGraph.name} 中没有找到节点：{nodeId}");
+            node.RuntimeUniqueId = _runtimeUniqueId;
+            data.node = node;
+            return data;
+        }
+
+        private static Queue<RuntimeNodeData> s_nodeDataQueue = new Queue<RuntimeNodeData>();
+        /// <summary>
+        /// 运行时Id
+        /// <para>每个节点在执行时版本号会加一</para>
+        /// </summary>
+        private static int s_runtimeId = int.MinValue;
+        /// <summary>
+        /// 运行时版本
+        /// </summary>
+        private static int S_RuntimeId
+        {
+            get
+            {
+                s_runtimeId++;
+                if (s_runtimeId == int.MaxValue)
+                    s_runtimeId = int.MinValue;
+                return s_runtimeId;
+            }
+        }
+        private static RuntimeNodeData GetNodeData()
+        {
+            if (s_nodeDataQueue.Count == 0)
+                return new RuntimeNodeData();
+            return s_nodeDataQueue.Dequeue();
+        }
+
+        private static void ReleaseNodeData(RuntimeNodeData data)
+        {
+            if (data == null)
+                return;
+            s_nodeDataQueue.Enqueue(data);
+        }
+
+        private class RuntimeNodeData
+        {
+            public int nodeId;
+            public int version;
+            public BaseMicroNode node;
+        }
     }
+
 }

@@ -78,8 +78,8 @@ namespace MicroGraph.Runtime
         /// <summary>
         /// 获取唯一ID
         /// </summary>
-        internal int GetUniqueId() => ++_uniqueId;
-        internal int SetUniqueId(int value) => _uniqueId = Math.Max(NODE_START_ID, value);
+        internal int GetNodeUniqueId() => ++_uniqueId;
+        internal int SetNodeUniqueId(int value) => _uniqueId = Math.Max(NODE_START_ID, value);
     }
 }
 

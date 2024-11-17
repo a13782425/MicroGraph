@@ -95,3 +95,6 @@
 	border-bottom-width: 2px;
 	border-bottom-color: var(--micrograph-colors-toolbar-border);
 }
+
+.node_usage_element .usage_content Label:checked{
+}

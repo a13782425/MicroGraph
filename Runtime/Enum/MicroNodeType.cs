@@ -25,4 +25,51 @@ namespace MicroGraph.Runtime
         /// </summary>
         Wait = 3,
     }
+    /// <summary>
+    /// 节点启用状态
+    /// </summary>
+    public enum MicroNodeEnableState
+    {
+        /// <summary>
+        /// 节点启用
+        /// </summary>
+        Enabled = 0,
+        /// <summary>
+        /// 节点禁用(不能使用但可以查到)
+        /// </summary>
+        Disabled,
+        /// <summary>
+        /// 节点排除(既不能使用也不能查到)
+        /// </summary>
+        Exclude,
+    }
+    /// <summary>
+    /// 节点颜色
+    /// </summary>
+    public enum NodeTitleColorType
+    {
+        Default = 0,
+        Slate,
+        Gray,
+        Zinc,
+        Neutral,
+        Stone,
+        Red,
+        Orange,
+        Amber,
+        Yellow,
+        Lime,
+        Green,
+        Emerald,
+        Teal,
+        Cyan,
+        Sky,
+        Blue,
+        Indigo,
+        Violet,
+        Purple,
+        Fuchsia,
+        Pink,
+        Rose
+    }
 }

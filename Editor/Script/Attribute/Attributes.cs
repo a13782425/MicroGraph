@@ -18,6 +18,22 @@ namespace MicroGraph.Editor
             this.type = type;
         }
     }
+
+    /// <summary>
+    /// 微图排序特性
+    /// 用于排序微图
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public sealed class MicroGraphOrderAttribute : Attribute
+    {
+        public int Order { get; private set; }
+
+        public MicroGraphOrderAttribute(int order)
+        {
+            this.Order = order;
+        }
+    }
+
     /// <summary>
     /// 标记微图格式化方法
     /// </summary>

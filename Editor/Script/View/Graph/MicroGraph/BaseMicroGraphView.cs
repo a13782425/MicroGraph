@@ -191,7 +191,30 @@ namespace MicroGraph.Editor
             }
         }
 
+#if MICRO_GRAPH_DEBUG
+        private MicroGraphDebuggerState _debuggerState = MicroGraphDebuggerState.None;
+        /// <summary>
+        /// 调试状态
+        /// </summary>
+        internal MicroGraphDebuggerState DebuggerState
+        {
+            get => _debuggerState;
+            set
+            {
+                if (value == _debuggerState)
+                    return;
+                _debuggerState = value;
+                this.listener.OnEvent(MicroGraphEventIds.DEBUGGER_LOCAL_GRAPH_STATE_CHANGED);
+            }
+        }
+#endif
+        /// <summary>
+        /// 操作节点中
+        /// </summary>
         private bool _operateNode = false;
+        /// <summary>
+        /// 操作变量中
+        /// </summary>
         private bool _operateVariable = false;
         /// <summary>
         /// 添加节点回调
@@ -209,7 +232,6 @@ namespace MicroGraph.Editor
         /// 移除变量回调
         /// </summary>
         public event Action<BaseMicroVariable> removeVariableCallback;
-
         public BaseMicroGraphView()
         {
             Input.imeCompositionMode = IMECompositionMode.On;
@@ -476,8 +498,6 @@ namespace MicroGraph.Editor
             listener.AddListener(MicroGraphEventIds.VAR_MODIFY, m_onVarModifyCallback);
             _alignmentView = new MicroAlignmentView(this);
             this.View.Add(_alignmentView);
-            _controlView = new MicroControlView(this);
-            this.View.Add(this._controlView);
             for (int i = Target.Variables.Count - 1; i >= 0; i--)
             {
                 BaseMicroVariable variable = Target.Variables[i];
@@ -516,13 +536,11 @@ namespace MicroGraph.Editor
                 if (n is BaseMicroNodeView.InternalNodeView mn)
                     mn.nodeView.DrawLink();
             });
-            this._controlView.VariableControlView.Show();
             this.View.UpdateViewTransform(editorInfo.Pos, new Vector2(editorInfo.Scale, editorInfo.Scale));
             _undo = new MicroGraphViewUndo();
             _undo.Initialize(this);
             m_initOther();
             onInit();
-
             void m_initOther()
             {
                 if (ShowGrid)
@@ -539,6 +557,8 @@ namespace MicroGraph.Editor
                     _internalGraphView.Add(_miniMap);
                 else
                     _miniMap.RemoveFromHierarchy();
+                _controlView = new MicroControlView(this);
+                this.View.Add(this._controlView);
             }
         }
         /// <summary>
@@ -566,7 +586,7 @@ namespace MicroGraph.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError(ex.Message);
+                MicroGraphLogger.LogError(ex.Message);
             }
             finally
             {
@@ -585,7 +605,7 @@ namespace MicroGraph.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError(ex.Message);
+                MicroGraphLogger.LogError(ex.Message);
             }
             finally
             {
@@ -596,7 +616,7 @@ namespace MicroGraph.Editor
         {
             this.Target.Variables.Add(editorInfo.Target);
             this.editorInfo.Variables.Add(editorInfo);
-            MicroVariableItemView itemView = this._controlView.VariableControlView.AddVariableView(editorInfo);
+            MicroVariableItemView itemView = this._controlView.GetControl<MicroVariableControlSubView>().AddVariableView(editorInfo);
             IMicroGraphRecordCommand record = new MicroVarAddRecord();
             record.Record(this, itemView);
             _undo?.AddCommand(record);
@@ -607,7 +627,7 @@ namespace MicroGraph.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError(ex.Message);
+                MicroGraphLogger.LogError(ex.Message);
             }
             finally
             {
@@ -618,7 +638,7 @@ namespace MicroGraph.Editor
         {
             this.Target.Variables.Remove(editorInfo.Target);
             this.editorInfo.Variables.Remove(editorInfo);
-            this._controlView.VariableControlView.RemoveVariableView(editorInfo);
+            this._controlView.GetControl<MicroVariableControlSubView>().RemoveVariableView(editorInfo);
             try
             {
                 _operateVariable = true;
@@ -626,7 +646,7 @@ namespace MicroGraph.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError(ex.Message);
+                MicroGraphLogger.LogError(ex.Message);
             }
             finally
             {
@@ -666,7 +686,7 @@ namespace MicroGraph.Editor
             MicroVariableNodeEditorInfo varNodeEditor = new MicroVariableNodeEditorInfo();
             varNodeEditor.Name = variable.Name;
             varNodeEditor.Pos = pos;
-            varNodeEditor.NodeId = editorInfo.GetUniqueId();
+            varNodeEditor.NodeId = editorInfo.GetNodeUniqueId();
             varNodeEditor.EditorInfo = editorInfo.Variables.FirstOrDefault(a => a.Name == variable.Name);
             return AddVariableNodeView(varNodeEditor);
         }
@@ -677,6 +697,7 @@ namespace MicroGraph.Editor
             IMicroGraphRecordCommand record = new MicroVarNodeAddRecord();
             record.Record(this, variableNodeView);
             _undo?.AddCommand(record);
+            listener.OnEvent(MicroGraphEventIds.VAR_NODE_MODIFY);
             return variableNodeView;
         }
         internal void RemoveVariableNodeView(MicroVariableNodeEditorInfo varNodeEditor)
@@ -698,7 +719,7 @@ namespace MicroGraph.Editor
             }
             string graphClassName = this.CategoryModel.GraphType.FullName;
             MicroGraphConfig graphEditorModel = MicroGraphUtils.EditorConfig.GraphConfigs.FirstOrDefault(a => a.GraphClassName == graphClassName);
-            if (graphEditorModel==null)
+            if (graphEditorModel == null)
             {
                 graphEditorModel = new MicroGraphConfig();
                 graphEditorModel.GraphClassName = graphClassName;
@@ -707,6 +728,7 @@ namespace MicroGraph.Editor
             MicroGraphTemplateModel model = new MicroGraphTemplateModel();
             model.Title = "模板";
             model.GraphClassName = this.CategoryModel.GraphType.FullName;
+            bool hasPackage = false;
             foreach (var item in View.selection)
             {
                 if (item is MicroVariableNodeView.InternalNodeView varNodeView)
@@ -715,7 +737,20 @@ namespace MicroGraph.Editor
                     if (model.Vars.FirstOrDefault(a => a.VarName == varName) == null)
                         MicroGraphProvider.GetRecordTemplateImpl(typeof(MicroVariableEditorInfo))?.Record(model, varNodeView.nodeView.editorInfo.EditorInfo);
                 }
+                if (item is BaseMicroNodeView.InternalNodeView nodeView)
+                {
+                    if (nodeView.nodeView is MicroPackageNodeView)
+                    {
+                        hasPackage = true;
+                        break;
+                    }
+                }
                 MicroGraphProvider.GetRecordTemplateImpl(item.GetType())?.Record(model, item);
+            }
+            if (hasPackage)
+            {
+                owner.ShowNotification(new GUIContent("创建模板失败,请不要选择包节点"), NOTIFICATION_TIME);
+                return;
             }
             graphEditorModel.Templates.Add(model);
             MicroGraphUtils.SaveConfig();
@@ -752,6 +787,10 @@ namespace MicroGraph.Editor
         /// <param name="evt"></param>
         protected virtual void buildContextualMenu(ContextualMenuPopulateEvent evt)
         {
+#if MICRO_GRAPH_DEBUG
+            if (DebuggerState == MicroGraphDebuggerState.Attach)
+                return;
+#endif
             evt.menu.AppendAction("创建/节点", m_onCreateNodeWindow, DropdownMenuAction.AlwaysEnabled);
             if (CategoryModel.UniqueNodeCategories.Count > 0)
             {
@@ -821,6 +860,10 @@ namespace MicroGraph.Editor
         }
         protected virtual void onKeyDownEvent(KeyDownEvent evt)
         {
+#if MICRO_GRAPH_DEBUG
+            if (DebuggerState == MicroGraphDebuggerState.Attach)
+                return;
+#endif
             foreach (var item in _keyEvents)
             {
                 if (item.IsCtrl != evt.ctrlKey || item.IsShift != evt.shiftKey || item.IsAlt != evt.altKey)
@@ -847,6 +890,8 @@ namespace MicroGraph.Editor
         {
             if (graphViewChange.elementsToRemove != null)
             {
+                m_checkPackage(ref graphViewChange.elementsToRemove);
+
                 bool removeVarNode = false;
                 for (int i = graphViewChange.elementsToRemove.Count - 1; i >= 0; i--)
                 {
@@ -1006,32 +1051,32 @@ namespace MicroGraph.Editor
             Type nodeType = editorInfo.Target.GetType();
             NodeCategoryModel nodeCategory = _operateModel.categoryModel.GetNodeCategory(nodeType);
             BaseMicroNodeView nodeView = Activator.CreateInstance(MicroGraphProvider.GetNodeViewType(nodeCategory)) as BaseMicroNodeView;
-            this.AddElement(nodeView);
             nodeView.Initialize(this, editorInfo, nodeCategory);
+            this.AddElement(nodeView);
             m_addChildElement(editorInfo.NodeId, nodeView);
             return nodeView;
         }
         private MicroVariableNodeView m_showVarNodeView(MicroVariableNodeEditorInfo varNodeEditor)
         {
             MicroVariableNodeView variableNodeView = new MicroVariableNodeView();
-            variableNodeView.Initialize(this, varNodeEditor);
             this.AddElement(variableNodeView);
+            variableNodeView.Initialize(this, varNodeEditor);
             m_addChildElement(varNodeEditor.NodeId, variableNodeView);
             return variableNodeView;
         }
         private MicroGroupView m_showGroupView(MicroGroupEditorInfo group)
         {
             MicroGroupView groupView = new MicroGroupView();
-            groupView.Initialize(this, group);
             this.AddElement(groupView);
+            groupView.Initialize(this, group);
             m_addChildElement(group.GroupId, groupView);
             return groupView;
         }
         private MicroStickyNoteView m_showStickyView(MicroStickyEditorInfo sticky)
         {
             MicroStickyNoteView stickyView = new MicroStickyNoteView();
-            stickyView.Initialize(this, sticky);
             this.AddElement(stickyView);
+            stickyView.Initialize(this, sticky);
             m_addChildElement(sticky.NodeId, stickyView);
             return stickyView;
         }
@@ -1050,7 +1095,7 @@ namespace MicroGraph.Editor
             var windowMousePosition = owner.rootVisualElement.ChangeCoordinatesTo(owner.rootVisualElement.parent, screenPos - owner.position.position);
             var groupPos = this.View.contentViewContainer.WorldToLocal(windowMousePosition);
             MicroGroupEditorInfo group = new MicroGroupEditorInfo();
-            group.GroupId = editorInfo.GetUniqueId();
+            group.GroupId = editorInfo.GetNodeUniqueId();
             group.Pos = groupPos;
             group.Title = "默认分组";
             group.GroupColor = UnityEngine.Random.ColorHSV(0, 1, 0.58f, 0.58f, 0.8f, 0.8f);
@@ -1073,7 +1118,7 @@ namespace MicroGraph.Editor
             var windowMousePosition = owner.rootVisualElement.ChangeCoordinatesTo(owner.rootVisualElement.parent, screenPos - owner.position.position);
             var stickyPos = this.View.contentViewContainer.WorldToLocal(windowMousePosition);
             MicroStickyEditorInfo sticky = new MicroStickyEditorInfo();
-            sticky.NodeId = editorInfo.GetUniqueId();
+            sticky.NodeId = editorInfo.GetNodeUniqueId();
             sticky.Pos = stickyPos;
             sticky.Size = new Vector2(140, 120);
             sticky.Theme = 0;
@@ -1110,23 +1155,32 @@ namespace MicroGraph.Editor
             //经过计算得出节点的位置
             var windowMousePosition = this.View.ChangeCoordinatesTo(this, context.screenMousePosition - owner.position.position);
             var nodePosition = this.View.contentViewContainer.WorldToLocal(windowMousePosition);
-            if (entry.userData is NodeCategoryModel nodeCategory)
+            switch (entry.userData)
             {
-                if (CategoryModel.UniqueNodeCategories.Contains(nodeCategory))
-                {
-                    BaseMicroNode node = Target.Nodes.FirstOrDefault(a => a.GetType() == nodeCategory.NodeClassType);
-                    if (node != null)
+                case NodeCategoryModel nodeCategory:
                     {
-                        Node nodeVew = this.GetElement<Node>(node.OnlyId);
-                        this.View.AddToSelection(nodeVew);
-                        this.View.FrameSelection();
-                        this.owner.ShowNotification(new GUIContent("唯一节点不允许重复创建"), NOTIFICATION_TIME);
-                        return false;
+                        if (CategoryModel.UniqueNodeCategories.Contains(nodeCategory))
+                        {
+                            BaseMicroNode node = Target.Nodes.FirstOrDefault(a => a.GetType() == nodeCategory.NodeClassType);
+                            if (node != null)
+                            {
+                                Node nodeVew = this.GetElement<Node>(node.OnlyId);
+                                this.View.AddToSelection(nodeVew);
+                                this.View.FrameSelection();
+                                this.owner.ShowNotification(new GUIContent("唯一节点不允许重复创建"), NOTIFICATION_TIME);
+                                return false;
+                            }
+                        }
+                        AddNode(nodeCategory.NodeClassType, nodePosition);
                     }
-                }
-                AddNode(nodeCategory.NodeClassType, nodePosition);
+                    break;
+                case MicroGroupEditorInfo groupEditorInfo:
+                    {
+                        MicroPackageNode packageNode = AddNode<MicroPackageNode>(nodePosition);
+                        packageNode.PackageId = groupEditorInfo.GroupId;
+                    }
+                    break;
             }
-
             return true;
         }
         /// <summary>
@@ -1165,7 +1219,7 @@ namespace MicroGraph.Editor
 
             if (field != null)
             {
-                field.SetValue(node, editorInfo.GetUniqueId());
+                field.SetValue(node, editorInfo.GetNodeUniqueId());
             }
             else
             {
@@ -1191,7 +1245,7 @@ namespace MicroGraph.Editor
             {
                 id = Mathf.Max(editorInfo.Stickys.Max(a => a.NodeId), id);
             }
-            editorInfo.SetUniqueId(id);
+            editorInfo.SetNodeUniqueId(id);
         }
         /// <summary>
         /// 拖拽更新函数
@@ -1199,6 +1253,10 @@ namespace MicroGraph.Editor
         /// <param name="evt"></param>       
         private void m_onDragUpdatedEvent(DragUpdatedEvent evt)
         {
+#if MICRO_GRAPH_DEBUG
+            if (DebuggerState == MicroGraphDebuggerState.Attach)
+                return;
+#endif
             List<ISelectable> dragData = DragAndDrop.GetGenericData("DragSelection") as List<ISelectable>;
             bool dragging = false;
             if (dragData != null)
@@ -1224,6 +1282,10 @@ namespace MicroGraph.Editor
         /// <param name="evt"></param>
         private void m_onDragPerformEvent(DragPerformEvent evt)
         {
+#if MICRO_GRAPH_DEBUG
+            if (DebuggerState == MicroGraphDebuggerState.Attach)
+                return;
+#endif
             var mousePos = (evt.currentTarget as VisualElement).ChangeCoordinatesTo(View.contentViewContainer, evt.localMousePosition);
             var dragData = DragAndDrop.GetGenericData("DragSelection") as List<ISelectable>;
             if (dragData != null)
@@ -1253,6 +1315,10 @@ namespace MicroGraph.Editor
         }
         private void m_nodeCreateRequest(NodeCreationContext context)
         {
+#if MICRO_GRAPH_DEBUG
+            if (DebuggerState == MicroGraphDebuggerState.Attach)
+                return;
+#endif
             if (_createNodeWindow == null)
             {
                 _createNodeWindow = ScriptableObject.CreateInstance<MicroCreateNodeWindow>();
@@ -1353,6 +1419,14 @@ namespace MicroGraph.Editor
         /// <param name="elementsToRemove"></param>
         private void m_removeNodeView(BaseMicroNodeView nodeView, ref int index, ref List<GraphElement> elementsToRemove)
         {
+            try
+            {
+                nodeView.InternalExit();
+            }
+            catch (Exception ex)
+            {
+                MicroGraphLogger.LogError("删除节点失败: " + ex.Message);
+            }
             this.Target.Nodes.Remove(nodeView.Target);
             this.editorInfo.Nodes.Remove(nodeView.editorInfo);
             this._childElements.Remove(nodeView.editorInfo.NodeId);
@@ -1374,7 +1448,14 @@ namespace MicroGraph.Editor
         {
             this.editorInfo.VariableNodes.Remove(varNodeView.editorInfo);
             this._childElements.Remove(varNodeView.editorInfo.NodeId);
-            varNodeView.OnDestory();
+            try
+            {
+                varNodeView.OnDestory();
+            }
+            catch (Exception ex)
+            {
+                MicroGraphLogger.LogError("变量节点销毁失败:" + ex.Message);
+            }
             IMicroGraphRecordCommand record = new MicroVarNodeDeleteRecord();
             record.Record(this, varNodeView);
             _undo?.AddCommand(record);
@@ -1431,6 +1512,8 @@ namespace MicroGraph.Editor
             MicroPort.InternalPort output = microEdgeView.output as MicroPort.InternalPort;
             input.microPort.Disonnect(output);
             output.microPort.Disonnect(input);
+            if (input.microPort.portType == MicroPortType.PackagePort || output.microPort.portType == MicroPortType.PackagePort)
+                return;
             IMicroGraphRecordCommand record = new MicroEdgeDeleteRecord();
             record.Record(this, microEdgeView);
             _undo?.AddCommand(record);
@@ -1439,6 +1522,8 @@ namespace MicroGraph.Editor
         {
             this.editorInfo.Groups.Remove(groupView.editorInfo);
             this._childElements.Remove(groupView.editorInfo.GroupId);
+            if (groupView.editorInfo.IsPackage)
+                this.Target.Packages.RemoveAll(a => a.PackageId == groupView.editorInfo.GroupId);
             IMicroGraphRecordCommand record = new MicroGroupDeleteRecord();
             record.Record(this, groupView);
             _undo?.AddCommand(record);
@@ -1451,6 +1536,47 @@ namespace MicroGraph.Editor
             IMicroGraphRecordCommand record = new MicroStickyDeleteRecord();
             record.Record(this, stickyNoteView);
             _undo?.AddCommand(record);
+        }
+        /// <summary>
+        /// 检查节点包
+        /// </summary>
+        /// <param name="elementsToRemove"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void m_checkPackage(ref List<GraphElement> elementsToRemove)
+        {
+            var packageGroup = elementsToRemove.OfType<MicroGroupView>().Where(a =>
+            {
+                if (a.editorInfo.IsPackage)
+                {
+                    int nodeCount = this.Target.Nodes.Count(n =>
+                    {
+                        if (n is MicroPackageNode packageNode)
+                            return packageNode.PackageId == a.editorInfo.GroupId;
+                        return false;
+                    });
+                    return nodeCount > 0;
+                }
+                return false;
+            }).ToList();
+            if (packageGroup.Count > 0)
+                owner.ShowNotification(new GUIContent("节点包正在被使用，无法删除，请先删除引用"), NOTIFICATION_TIME);
+            for (int i = elementsToRemove.Count - 1; i >= 0; i--)
+            {
+                var elememt = elementsToRemove[i];
+                if (packageGroup.Contains(elememt))
+                {
+                    elementsToRemove.RemoveAt(i);
+                }
+                else if (packageGroup.Contains(elememt.GetContainingScope()))
+                {
+                    elementsToRemove.RemoveAt(i);
+                }
+                else if (elememt is MicroEdgeView edgeView)
+                {
+                    if (packageGroup.Contains(edgeView.input.node?.GetContainingScope()) || packageGroup.Contains(edgeView.output.node?.GetContainingScope()))
+                        elementsToRemove.RemoveAt(i);
+                }
+            }
         }
         private bool m_onVarModifyCallback(object args)
         {
@@ -1473,12 +1599,28 @@ namespace MicroGraph.Editor
     //内部Class
     partial class BaseMicroGraphView
     {
+#if MICRO_GRAPH_DEBUG
+        /// <summary>
+        /// 调试状态
+        /// </summary>
+        internal enum MicroGraphDebuggerState
+        {
+            /// <summary>
+            /// 默认
+            /// </summary>
+            None,
+            /// <summary>
+            /// 附加
+            /// </summary>
+            Attach
+        }
+#endif
+
         internal class InternalGraphView : GraphView
         {
             internal readonly BaseMicroGraphView graphView;
 
             public bool CanCopy => selection.Any((ISelectable s) => s is Node || s is Group || s is Placemat || s is MicroStickyNoteView || s is StickyNote || s is MicroVariableItemView);
-
             internal InternalGraphView(BaseMicroGraphView baseGraphView)
             {
                 this.AddToClassList("internalGraphView");
@@ -1517,7 +1659,7 @@ namespace MicroGraph.Editor
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError(ex.Message);
+                    MicroGraphLogger.LogError(ex.Message);
                 }
             }
             public override void RemoveFromSelection(ISelectable selectable)
@@ -1529,7 +1671,7 @@ namespace MicroGraph.Editor
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError(ex.Message);
+                    MicroGraphLogger.LogError(ex.Message);
                 }
             }
             public override EventPropagation DeleteSelection()
@@ -1541,7 +1683,7 @@ namespace MicroGraph.Editor
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError(ex.Message);
+                    MicroGraphLogger.LogError(ex.Message);
                 }
                 return result;
             }
@@ -1554,7 +1696,7 @@ namespace MicroGraph.Editor
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError(ex.Message);
+                    MicroGraphLogger.LogError(ex.Message);
                 }
             }
 

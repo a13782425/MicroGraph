@@ -1,0 +1,23 @@
+.unity-base-field > .unity-base-field__label{
+	min-width: 12px;
+	max-width: 48px;
+	-unity-text-align: middle-left;
+}
+.comment_input{
+	-unity-font-style: italic;
+}
+.comment_input > .unity-base-field__label{
+	display: none;
+}
+.comment_input > #unity-text-input{
+	color: #A9A9A9;
+	-unity-text-align: middle-center;
+	/* border-width: 0px; */
+	border-color: #747474;
+}
+.comment_input_placeholder > #unity-text-input{
+	color: #A9A9A9;
+	-unity-text-align: middle-center;
+	/* border-width: 0px; */
+	border-color: #747474;
+}

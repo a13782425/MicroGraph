@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MicroGraph.Runtime
+﻿namespace MicroGraph.Runtime
 {
     /// <summary>
     /// 微图运行时状态
@@ -30,25 +24,48 @@ namespace MicroGraph.Runtime
         /// </summary>
         Pause,
         /// <summary>
-        /// 调试暂停中
-        /// 调试器中断
+        /// 完成运行
         /// </summary>
-        DebugPause,
+        Complete,
         /// <summary>
         /// 退出
+        /// <para>调用退出或者释放时候切换此状态</para>
         /// </summary>
         Exit,
-        /// <summary>
-        /// 初始化失败
-        /// </summary>
-        InitFailure,
+        ///// <summary>
+        ///// 初始化失败
+        ///// </summary>
+        //InitFailure,
         /// <summary>
         /// 执行失败
         /// </summary>
         RunningFailure,
+        ///// <summary>
+        ///// 退出失败
+        ///// </summary>
+        //ExitFailure
+    }
+
+    /// <summary>
+    /// 微图运行时结束模式
+    /// </summary>
+    public enum MicroGraphRuntimeEndMode
+    {
         /// <summary>
-        /// 退出失败
+        /// 没有结束模式
         /// </summary>
-        ExitFailure
+        None = 0,
+        /// <summary>
+        /// 自动结束
+        /// </summary>
+        Auto,
+        /// <summary>
+        /// 手动调用Exit方法
+        /// </summary>
+        Manual,
+        /// <summary>
+        /// 结束节点模式
+        /// </summary>
+        EndNode
     }
 }

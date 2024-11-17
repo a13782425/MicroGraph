@@ -14,7 +14,7 @@ namespace MicroGraph.Editor
         /// [大版本][小版本][Bug修复]
         /// 大版本 大于0 为正式版
         /// </summary>
-        public const string VERSIONS = "0.1.0 A";
+        public const string VERSIONS = "0.1.32 A";
 
         /// <summary>
         /// 默认开放网格

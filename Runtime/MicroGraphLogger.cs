@@ -11,7 +11,8 @@ namespace MicroGraph.Runtime
         /// 日志过滤器
         /// </summary>
         public static LogType LogFilter = LogType.Log;
-        private static string LogTitle => $"[MicroGraph - {Time.frameCount}]:";
+        // private static string LogTitle => $"[MicroGraph - {(Application.isPlaying ? Time.frameCount : "编辑器")}]:";
+        private static string LogTitle => $"[MicroGraph - 编辑器]:";
         public static void Log(object message)
         {
             if (LogType.Log <= LogFilter)

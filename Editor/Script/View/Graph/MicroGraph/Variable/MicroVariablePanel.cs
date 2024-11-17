@@ -1,4 +1,5 @@
 ﻿using MicroGraph.Runtime;
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -10,6 +11,7 @@ namespace MicroGraph.Editor
     /// <summary>
     /// 微图变量面板
     /// </summary>
+    [Obsolete("已经弃用,请使用MicroVariableControlSubView", true)]
     internal sealed class MicroVariablePanel : Blackboard
     {
         private const string STYLE_PATH = "Uss/MicroGraph/MicroVariablePanel";

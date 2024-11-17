@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace MicroGraph.Editor
 {
@@ -547,6 +548,10 @@ namespace MicroGraph.Editor
                 outPort = outTempNodeView.nodeView.GetMicroPort(this.outKey, false);
             else if (outNodeView is MicroVariableNodeView.InternalNodeView outTempVarNodeView)
                 outPort = outTempVarNodeView.nodeView.OutPut;
+            if (inPort == outPort || inPort == null || outPort == null)
+                return false;
+            if (inPort.view.style.display == DisplayStyle.None || outPort.view.style.display == DisplayStyle.None)
+                return false;
             outPort.Connect(inPort);
             return true;
         }
@@ -643,6 +648,8 @@ namespace MicroGraph.Editor
             else if (outNodeView is MicroVariableNodeView.InternalNodeView outTempVarNodeView)
                 outPort = outTempVarNodeView.nodeView.OutPut;
             if (inPort == outPort || inPort == null || outPort == null)
+                return false;
+            if (inPort.view.style.display == DisplayStyle.None || outPort.view.style.display == DisplayStyle.None)
                 return false;
             outPort.Connect(inPort);
             return true;
